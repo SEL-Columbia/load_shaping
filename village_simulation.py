@@ -1,4 +1,5 @@
 import pandas as p
+import scipy as sp
 
 class Inverter:
     inverter_curve = {'output_power':[ 20,   45, 300, 750],
@@ -21,6 +22,14 @@ class Battery:
         efficiency = spi.interp1d(self.efficiency_curve['output_power'],
                                   self.efficiency_curve['efficiency'])
         return efficiency(load)
+
+class Solar:
+    latitude = 0
+    longitude = 0
+
+    def insolation(self, hour):
+        return (sp.sin(hour / 24. * sp.pi) + 1) / 2 * 500
+
 
 load = [50, 50, 50, 50, 50, 50,
         50, 50, 50, 50, 50, 50,
@@ -49,6 +58,8 @@ print 'effective_efficiency =', daily_load / daily_battery_load
 
 inverter = Inverter()
 battery = Battery()
+solar = Solar()
+
 import numpy as np
 battery_energy = np.zeros(len(load))
 
@@ -62,6 +73,7 @@ for i in range(2, len(load)):
     # determine insolation
     # determine solar panel output power
     solar_power = 100
+    solar_power = solar.insolation(i)
 
     # compare inverter load to solar generation
     # determine how much energy comes from pv and battery
@@ -77,4 +89,7 @@ for i in range(2, len(load)):
 
     print load_customer,
     print load_inverter,
+    print solar_power,
     print battery_energy[i]
+
+
