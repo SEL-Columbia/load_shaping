@@ -63,7 +63,11 @@ solar = Solar()
 import numpy as np
 battery_energy = np.zeros(len(load))
 
-for i in range(2, len(load)):
+lca = []
+lia = []
+spa = []
+
+for i in range(1, len(load)):
     # determine customer load for hour
     load_customer = load[i]
 
@@ -91,5 +95,23 @@ for i in range(2, len(load)):
     print load_inverter,
     print solar_power,
     print battery_energy[i]
+
+    lca.append(load_customer)
+    lia.append(load_inverter)
+    spa.append(solar_power)
+
+d = {'load_customer' : lca,
+     'load_inverter' : lia,
+     'solar_power' : spa,
+     'battery_energy' : battery_energy[1:len(load)]}
+
+df = p.DataFrame(d)
+
+import matplotlib.pyplot as plt
+f, ax = plt.subplots(1, 1)
+ax.plot(lca)
+ax.plot(lia)
+ax.plot(spa)
+plt.show()
 
 
