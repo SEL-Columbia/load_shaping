@@ -1,5 +1,6 @@
 import scipy as sp
 import scipy.interpolate as spi
+from scipy import sin, cos, tan, arcsin, arccos
 
 
 
@@ -30,6 +31,8 @@ class Battery:
 class Solar:
     lat = sp.radians(40)
     lon = sp.radians(0)
+    el_tilt = sp.radians(0)
+    az_tilt = sp.radians(0)
 
     def declination(self, date):
         # '%j' gives day of year
@@ -56,9 +59,16 @@ class Solar:
         else:
             return (sp.pi - az)
 
-    def insolation(self, hour):
-        if sp.sin(hour / 24. * sp.pi) > 0:
-            return sp.sin(hour / 24. * sp.pi) / 2 * 500
-        else:
-            return 0
+    def incidence_angle(self, date):
+        dec = self.declination(date)
+        el = self.elevation(date)
+        az = self.azimuth(date)
+        return arccos(cos(el) * cos(az - self.az_tilt) * sin(self.el_tilt)
+                      + sin(el) * cos(self.el_tilt))
 
+    def insolation(self, date):
+        # todo: no air mass correction
+        A = 1000
+        # optical depth
+        # attenuation
+        return A * cos(self.incidence_angle(date))
