@@ -7,6 +7,10 @@ class Inverter:
     #inverter_curve = {'output_power':[ 20,   45, 300, 750],
     #                    'efficiency':[0.9, 0.9, 0.9, 0.9]}
 
+    # this might be better off returning the power demanded rather
+    # than the efficiency, especially since we need to use the
+    # no-load condition
+
     def efficiency(self, load):
         import scipy.interpolate as spi
         efficiency = spi.interp1d(self.inverter_curve['output_power'],
@@ -27,8 +31,18 @@ class Solar:
     latitude = 0
     longitude = 0
 
+    def declination(self, date):
+        day_of_year = date.strftime('%j')
+        return 23.45 * sp.sin(2 * sp.pi * (day_of_year - 81) / 365.0)
+
+    def hour_angle(self, date):
+        pass
+
     def insolation(self, hour):
-        return (sp.sin(hour / 24. * sp.pi) + 1) / 2 * 500
+        if sp.sin(hour / 24. * sp.pi) > 0:
+            return sp.sin(hour / 24. * sp.pi) / 2 * 500
+        else:
+            return 0
 
 
 load = [50, 50, 50, 50, 50, 50,
@@ -62,6 +76,7 @@ solar = Solar()
 
 import numpy as np
 battery_energy = np.zeros(len(load))
+battery_energy[0] = 100
 
 lca = []
 lia = []
@@ -112,6 +127,7 @@ f, ax = plt.subplots(1, 1)
 ax.plot(lca)
 ax.plot(lia)
 ax.plot(spa)
+ax.plot(battery_energy[1:len(load)])
 plt.show()
 
 
