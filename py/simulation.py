@@ -1,10 +1,20 @@
 import pandas as p
 import pvsim as pvs
+import datetime as dt
 
+date_start = dt.datetime(2012, 2, 1)
+date_end = dt.datetime(2012, 2, 2)
+
+# create date range to get insolation
+rng = p.DateRange(date_start, date_end, offset=p.DateOffset(hours=1))
+
+# load should be series with date range as index
 load = [50, 50, 50, 50, 50, 50,
         50, 50, 50, 50, 50, 50,
         50, 50, 50, 50, 50, 50,
-        300, 300, 300, 300, 300, 300]
+        300, 300, 300, 300, 300, 300, 50]
+
+ls = p.Series(load, index=rng)
 
 def get_load_from_csv():
     df = p.read_csv('week_of_data.csv', index_col=0)
@@ -23,6 +33,32 @@ battery_energy[0] = 100
 lca = []
 lia = []
 spa = []
+
+for i in ls.index:
+    print i,
+    print ls[i]
+    lca.append(ls[i])
+    spa.append(solar.insolation(i))
+# assemble everything into a dataframe
+d = {'load_customer' : lca,
+     'solar_power' : spa}#,
+#     'load_inverter' : lia,
+
+#     'battery_energy' : battery_energy[1:len(load)]}
+
+df = p.DataFrame(d)
+
+import matplotlib.pyplot as plt
+f, ax = plt.subplots(1, 1)
+ax.plot(d['load_customer'])
+#ax.plot(lia)
+ax.plot(d['solar_power'])
+#ax.plot(battery_energy[1:len(load)])
+plt.show()
+
+'''
+# iterate over date range
+# and get both date and value?
 
 for i in range(1, len(load)):
     # determine customer load for hour
@@ -57,22 +93,9 @@ for i in range(1, len(load)):
     lia.append(load_inverter)
     spa.append(solar_power)
 
-d = {'load_customer' : lca,
-     'load_inverter' : lia,
-     'solar_power' : spa,
-     'battery_energy' : battery_energy[1:len(load)]}
-
-df = p.DataFrame(d)
-
-import matplotlib.pyplot as plt
-f, ax = plt.subplots(1, 1)
-ax.plot(lca)
-ax.plot(lia)
-ax.plot(spa)
-ax.plot(battery_energy[1:len(load)])
-plt.show()
 
 
+'''
 '''
 daily_load = 0
 daily_battery_load = 0
