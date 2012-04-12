@@ -29,21 +29,27 @@ class Inverter:
 
 class Battery:
     efficiency_curve = {'output_power':[0, 1000],
-                       'efficiency':[1,    1]}
+                       'efficiency':[0.75,   0.75]}
 
     def efficiency(self, load):
         efficiency = spi.interp1d(self.efficiency_curve['output_power'],
                                   self.efficiency_curve['efficiency'])
         return efficiency(load)
 
+
 '''
 calculates insolation and other solar properties
 '''
 class Solar:
-    lat = sp.radians(40)
+    lat = sp.radians(0)
     lon = sp.radians(0)
     el_tilt = sp.radians(0)
     az_tilt = sp.radians(0)
+    A = 1000
+
+    def __init__(self, A=1000, lat=0):
+        self.A = A
+        self.lat = sp.radians(lat)
 
     def declination(self, date):
         # '%j' gives day of year
@@ -79,10 +85,9 @@ class Solar:
 
     def insolation(self, date):
         # todo: no air mass correction
-        A = 1000
         # optical depth
         # attenuation
-        ins = A * cos(self.incidence_angle(date))
+        ins = self.A * cos(self.incidence_angle(date))
         if ins > 0:
             return ins
         else:
