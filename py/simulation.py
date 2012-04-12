@@ -86,10 +86,29 @@ rng = p.DateRange(date_start, date_end, offset=p.DateOffset(hours=1))
 # create load profile and series object
 # 9, 6, 10
 # 18, 6, 1
-load_values = [0] * 18
-load_values.extend([300] * 6)
-load_values.extend([0] * 1)
-load = p.Series(load_values, index=rng)
+def night_load():
+    load_values = [0] * 18
+    load_values.extend([300] * 6)
+    load_values.extend([0] * 1)
+    load = p.Series(load_values, index=rng)
+    return load
+
+def day_load():
+    load_values = [0] * 9
+    load_values.extend([300] * 6)
+    load_values.extend([0] * 10)
+    load = p.Series(load_values, index=rng)
+    return load
+
+def cont_load():
+    load_values = [1800/25.] * 25
+    load = p.Series(load_values, index=rng)
+    return load
+
+
+load = night_load()
+load = day_load()
+load = cont_load()
 
 solution = spo.fsolve(solve_wrapper, 800)
 
