@@ -5,10 +5,10 @@ import datetime as dt
 import scipy.optimize as spo
 
 def get_load_from_csv():
-    df = p.read_csv('week_of_data.csv', index_col=0)
-    return df['power'].dropna().values
-
-
+    df = p.read_csv('week_of_data.csv', index_col=0, parse_dates=True)
+    #return df['power'].dropna().values
+    #df = df['power'].dropna()
+    return p.Series(df['power'].values, index=df.index).dropna()
 
 def run_time_step(inverter,
                   battery,
@@ -107,10 +107,11 @@ def cont_load():
 
 
 load = night_load()
-load = day_load()
-load = cont_load()
+#load = day_load()
+#load = cont_load()
+load = get_load_from_csv()
 
-solution = spo.fsolve(solve_wrapper, 800)
+solution = spo.fsolve(solve_wrapper, 2000)
 
 generation_size = solution[0]
 
@@ -129,13 +130,13 @@ print 'end battery charge', df.ix[len(df)-1]['battery_energy']
 print 'solar size', solar.A
 
 plot = True
-plot = False
+#plot = False
 if plot:
     import matplotlib.pyplot as plt
     f, ax = plt.subplots(1, 1)
-    ax.plot(d['load_customer'])
-    ax.plot(d['load_inverter'])
-    ax.plot(d['solar_power'])
-    ax.plot(d['battery_energy'])
+    ax.plot(df['load_customer'])
+    ax.plot(df['load_inverter'])
+    ax.plot(df['solar_power'])
+    ax.plot(df['battery_energy'])
     ax.grid(True)
     plt.show()
