@@ -19,6 +19,7 @@ class Inverter:
                                   self.inverter_curve['efficiency'])
         return efficiency(load)
 
+
 class Battery:
     efficiency_curve = {'output_power':[0, 1000],
                        'efficiency':[1,    1]}
@@ -28,6 +29,9 @@ class Battery:
                                   self.efficiency_curve['efficiency'])
         return efficiency(load)
 
+'''
+calculates insolation and other solar properties
+'''
 class Solar:
     lat = sp.radians(40)
     lon = sp.radians(0)
@@ -71,4 +75,8 @@ class Solar:
         A = 1000
         # optical depth
         # attenuation
-        return A * cos(self.incidence_angle(date))
+        ins = A * cos(self.incidence_angle(date))
+        if ins > 0:
+            return ins
+        else:
+            return 0
