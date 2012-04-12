@@ -7,14 +7,13 @@ from scipy import sin, cos, tan, arcsin, arccos
 class Inverter:
     efficiency_curve = {'output_power':[ 20,   45, 300, 750],
                           'efficiency':[0.4, 0.65, 0.8, 0.9]}
-    output_curve = {'output_power':[ 0, 20, 45, 300, 750],
-                     'input_power':[10, 50, 70, 375, 833]}
+    output_curve = {'output_power':[0, 750],
+                    'input_power' :[0, 750/.9]}
+
+    #output_curve = {'output_power':[ 0, 20, 45, 300, 750],
+    #                 'input_power':[10, 50, 70, 375, 833]}
     #inverter_curve = {'output_power':[ 20,   45, 300, 750],
     #                    'efficiency':[0.9, 0.9, 0.9, 0.9]}
-
-    # this might be better off returning the power demanded rather
-    # than the efficiency, especially since we need to use the
-    # no-load condition
 
     def efficiency(self, load):
         efficiency = spi.interp1d(self.efficiency_curve['output_power'],
