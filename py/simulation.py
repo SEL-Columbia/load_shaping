@@ -1,76 +1,47 @@
+import numpy as np
 import pandas as p
 import pvsim as pvs
 import datetime as dt
-
-date_start = dt.datetime(2012, 2, 1)
-date_end = dt.datetime(2012, 2, 2)
-
-# create date range to get insolation
-rng = p.DateRange(date_start, date_end, offset=p.DateOffset(hours=1))
-
-# load should be series with date range as index
-load = [50, 50, 50, 50, 50, 50,
-        50, 50, 50, 50, 50, 50,
-        50, 50, 50, 50, 50, 50,
-        300, 300, 300, 300, 300, 300, 50]
-
-ls = p.Series(load, index=rng)
 
 def get_load_from_csv():
     df = p.read_csv('week_of_data.csv', index_col=0)
     return df['power'].dropna().values
 
 
+# create date range to get insolation
+date_start = dt.datetime(2012, 2, 1)
+date_end = dt.datetime(2012, 2, 2)
+rng = p.DateRange(date_start, date_end, offset=p.DateOffset(hours=1))
 
+# create load profile and series object
+load_values = [50] * 9
+load_values.extend([300] * 6)
+load_values.extend([50] * 10)
+load = p.Series(load_values, index=rng)
+
+# create objects for simulation
 inverter = pvs.Inverter()
 battery = pvs.Battery()
 solar = pvs.Solar()
 
-import numpy as np
-battery_energy = np.zeros(len(load))
-battery_energy[0] = 100
-
+battery_energy = [0]
 lca = []
 lia = []
 spa = []
 
-for i in ls.index:
-    print i,
-    print ls[i]
-    lca.append(ls[i])
-    spa.append(solar.insolation(i))
-# assemble everything into a dataframe
-d = {'load_customer' : lca,
-     'solar_power' : spa}#,
-#     'load_inverter' : lia,
-
-#     'battery_energy' : battery_energy[1:len(load)]}
-
-df = p.DataFrame(d)
-
-import matplotlib.pyplot as plt
-f, ax = plt.subplots(1, 1)
-ax.plot(d['load_customer'])
-#ax.plot(lia)
-ax.plot(d['solar_power'])
-#ax.plot(battery_energy[1:len(load)])
-plt.show()
-
-'''
-# iterate over date range
-# and get both date and value?
-
-for i in range(1, len(load)):
+for date in load.index:
     # determine customer load for hour
-    load_customer = load[i]
+    load_customer = load[date]
 
     # determine inverter load
     load_inverter = load_customer / inverter.efficiency(load_customer)
 
+    lca.append(load[date])
+    lia.append(load_inverter)
+    spa.append(solar.insolation(date))
+
     # determine insolation
-    # determine solar panel output power
-    solar_power = 100
-    solar_power = solar.insolation(i)
+    solar_power = solar.insolation(date)
 
     # compare inverter load to solar generation
     # determine how much energy comes from pv and battery
@@ -82,33 +53,28 @@ for i in range(1, len(load)):
         discharge = load_inverter - solar_power
 
     # calculate next energy storage state based on energy from battery
-    battery_energy[i] = battery_energy[i-1] + charge - discharge / battery.efficiency(discharge)
+    battery_energy.append(battery_energy[-1]
+                          + charge
+                          - discharge / battery.efficiency(discharge))
 
-    print load_customer,
-    print load_inverter,
-    print solar_power,
-    print battery_energy[i]
+# assemble everything into a dataframe
+d = {'load_customer' : lca,
+     'solar_power' : spa,
+     'load_inverter' : lia,
+     'battery_energy' : battery_energy[:-1]}
 
-    lca.append(load_customer)
-    lia.append(load_inverter)
-    spa.append(solar_power)
+df = p.DataFrame(d)
+
+print df['battery_energy'].max()
+print df['battery_energy'].min()
+print df['battery_energy'].max() - df['battery_energy'].min()
 
 
-
-'''
-'''
-daily_load = 0
-daily_battery_load = 0
-
-load = get_load_from_csv()
-
-for i in range(len(load)):
-    daily_load += load[i]
-    daily_battery_load += load[i] / inverter_efficiency(load[i])
-
-print 'daily_load =', daily_load
-print 'daily_battery_load =', daily_battery_load
-
-print 'effective_efficiency =', daily_load / daily_battery_load
-'''
-
+import matplotlib.pyplot as plt
+f, ax = plt.subplots(1, 1)
+ax.plot(d['load_customer'])
+ax.plot(d['load_inverter'])
+ax.plot(d['solar_power'])
+ax.plot(d['battery_energy'])
+ax.grid(True)
+plt.show()
