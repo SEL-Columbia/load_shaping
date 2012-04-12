@@ -5,8 +5,10 @@ from scipy import sin, cos, tan, arcsin, arccos
 
 
 class Inverter:
-    inverter_curve = {'output_power':[ 20,   45, 300, 750],
-                        'efficiency':[0.4, 0.65, 0.8, 0.9]}
+    efficiency_curve = {'output_power':[ 20,   45, 300, 750],
+                          'efficiency':[0.4, 0.65, 0.8, 0.9]}
+    output_curve = {'output_power':[ 0, 20, 45, 300, 750],
+                     'input_power':[10, 50, 70, 375, 833]}
     #inverter_curve = {'output_power':[ 20,   45, 300, 750],
     #                    'efficiency':[0.9, 0.9, 0.9, 0.9]}
 
@@ -15,9 +17,14 @@ class Inverter:
     # no-load condition
 
     def efficiency(self, load):
-        efficiency = spi.interp1d(self.inverter_curve['output_power'],
-                                  self.inverter_curve['efficiency'])
+        efficiency = spi.interp1d(self.efficiency_curve['output_power'],
+                                  self.efficiency_curve['efficiency'])
         return efficiency(load)
+
+    def input_power(self, load):
+        input_power = spi.interp1d(self.output_curve['output_power'],
+                                   self.output_curve['input_power'])
+        return input_power(load)
 
 
 class Battery:
