@@ -9,11 +9,11 @@ todo: be able to pass output curve to class on __init__
 class Inverter:
     efficiency_curve = {'output_power':[ 20,   45, 300, 750],
                           'efficiency':[0.4, 0.65, 0.8, 0.9]}
-    output_curve = {'output_power':[0, 750],
-                    'input_power' :[0, 750/.9]}
+    #output_curve = {'output_power':[0, 750],
+    #                'input_power' :[0, 750/.9]}
 
-    #output_curve = {'output_power':[ 0, 20, 45, 300, 750],
-    #                 'input_power':[10, 50, 70, 375, 833]}
+    output_curve = {'output_power':[ 0, 375, 750],
+                     'input_power':[0+13, 375+25, 750+47.9]}
     #inverter_curve = {'output_power':[ 20,   45, 300, 750],
     #                    'efficiency':[0.9, 0.9, 0.9, 0.9]}
 
