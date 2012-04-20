@@ -7,20 +7,9 @@ from scipy import sin, cos, tan, arcsin, arccos, pi, exp
 todo: be able to pass output curve to class on __init__
 '''
 class Inverter:
-    efficiency_curve = {'output_power':[ 20,   45, 300, 750],
-                          'efficiency':[0.4, 0.65, 0.8, 0.9]}
-    #output_curve = {'output_power':[0, 750],
-    #                'input_power' :[0, 750/.9]}
 
-    output_curve = {'output_power':[ 0, 375, 750],
-                     'input_power':[0+13, 375+25, 750+47.9]}
-    #inverter_curve = {'output_power':[ 20,   45, 300, 750],
-    #                    'efficiency':[0.9, 0.9, 0.9, 0.9]}
-
-    def efficiency(self, load):
-        efficiency = spi.interp1d(self.efficiency_curve['output_power'],
-                                  self.efficiency_curve['efficiency'])
-        return efficiency(load)
+    def __init__(self, output_curve):
+        self.output_curve = output_curve
 
     def input_power(self, load):
         input_power = spi.interp1d(self.output_curve['output_power'],
