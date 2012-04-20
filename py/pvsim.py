@@ -3,7 +3,9 @@ import scipy.interpolate as spi
 from scipy import sin, cos, tan, arcsin, arccos, pi, exp
 
 
-
+'''
+todo: be able to pass output curve to class on __init__
+'''
 class Inverter:
     efficiency_curve = {'output_power':[ 20,   45, 300, 750],
                           'efficiency':[0.4, 0.65, 0.8, 0.9]}
@@ -50,10 +52,10 @@ class Solar:
         self.lat = sp.radians(lat)
 
     def day_of_year(self, date):
+        # '%j' gives day of year
         return int(date.strftime('%j'))
 
     def declination(self, date):
-        # '%j' gives day of year
         day_of_year = self.day_of_year(date)
         return sp.radians(23.45 * sp.sin(2 * sp.pi * (day_of_year - 81) / 365.0))
 
@@ -70,7 +72,6 @@ class Solar:
     def azimuth(self, date):
         dec = self.declination(date)
         ha = self.hour_angle(date)
-        # todo: deal with over 90 degree condition
         az = sp.arcsin(sp.cos(dec) * sp.sin(ha) / sp.cos(self.elevation(date)))
         if (sp.cos(ha) >= (sp.tan(dec) / sp.tan(self.lat))):
             return az
@@ -116,9 +117,6 @@ class Panel:
                       + sin(el) * cos(self.el_tilt))
 
     def radiation_normal_panel(self, date):
-        # todo: no air mass correction
-        # optical depth
-        # attenuation
         ins = self.solar.direct_beam_radiation(date) * cos(self.incidence_angle(date))
         if ins > 0:
             return ins

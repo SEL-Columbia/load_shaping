@@ -14,12 +14,7 @@ def run_time_step(inverter,
                   battery,
                   solar,
                   load):
-    '''
-    # create objects for simulation
-    inverter = pvs.Inverter()
-    battery = pvs.Battery()
-    solar = pvs.Solar(A=786, lat=40)
-    '''
+
     battery_energy = [0]
     lca = []
     lia = []
@@ -65,6 +60,9 @@ def run_time_step(inverter,
 
     return df
 
+'''
+todo: change solver for panel size
+'''
 def solve_wrapper(A):
     # create objects for simulation
     inverter = pvs.Inverter()
@@ -106,10 +104,10 @@ def cont_load():
     return load
 
 
-load = night_load()
-#load = day_load()
+#load = night_load()
+load = day_load()
 #load = cont_load()
-load = get_load_from_csv()
+#load = get_load_from_csv()
 
 solution = spo.fsolve(solve_wrapper, 2000)
 
