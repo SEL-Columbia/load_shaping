@@ -10,9 +10,11 @@ def get_load_from_csv():
     #df = df['power'].dropna()
     return p.Series(df['power'].values, index=df.index).dropna()
 
+
 def run_time_step(inverter,
                   battery,
                   solar,
+                  panel,
                   load):
 
     battery_energy = [0]
@@ -20,21 +22,16 @@ def run_time_step(inverter,
     lia = []
     spa = []
 
-    # need to wrap this in a solver to get the right production size
     for date in load.index:
-        # determine customer load for hour
+        # determine customer and inverter loads and append to arrays
         load_customer = load[date]
-
-        # determine inverter load
-        #load_inverter = load_customer / inverter.efficiency(load_customer)
         load_inverter = inverter.input_power(load_customer)
-
         lca.append(load[date])
         lia.append(load_inverter)
-        spa.append(solar.insolation(date))
 
-        # determine insolation
-        solar_power = solar.insolation(date)
+        # determine power produced by panel and append to array
+        solar_power = panel.power(date)
+        spa.append(solar_power)
 
         # compare inverter load to solar generation
         # determine how much energy comes from pv and battery
@@ -67,11 +64,13 @@ def solve_wrapper(A):
     # create objects for simulation
     inverter = pvs.Inverter()
     battery = pvs.Battery()
-    solar = pvs.Solar(A=A, lat=40)
+    solar = pvs.Solar(lat=14)
+    panel = pvs.Panel(solar, area=A, efficiency=0.20, el_tilt=0, az_tilt=0)
 
     df = run_time_step(inverter,
                       battery,
                       solar,
+                      panel,
                       load)
 
     return df.ix[len(df)-1]['battery_energy']
@@ -103,30 +102,39 @@ def cont_load():
     load = p.Series(load_values, index=rng)
     return load
 
+def pretty_print(tag, value, col_width=30):
+    print tag.ljust(col_width),
+    print '%.2f' % value
 
 #load = night_load()
 load = day_load()
 #load = cont_load()
 #load = get_load_from_csv()
 
-solution = spo.fsolve(solve_wrapper, 2000)
-
+# get solution using solve wrapper
+solution = spo.fsolve(solve_wrapper, 2)
 generation_size = solution[0]
 
+# pass this solution to run_time_step (redundantly)
+# to get detailed simulation output
 inverter = pvs.Inverter()
 battery = pvs.Battery()
-solar = pvs.Solar(A=generation_size, lat=40)
+solar = pvs.Solar(lat=14)
+panel = pvs.Panel(solar, area=generation_size, efficiency=0.20, el_tilt=0, az_tilt=0)
 
 df = run_time_step(inverter,
                   battery,
                   solar,
+                  panel,
                   load)
 
-print 'battery excursion', df['battery_energy'].max() - df['battery_energy'].min()
-print 'customer load', df['load_customer'].sum()
-print 'end battery charge', df.ix[len(df)-1]['battery_energy']
-print 'solar size', solar.A
+# output results to stdout
+pretty_print('battery excursion (Wh)', df['battery_energy'].max() - df['battery_energy'].min())
+pretty_print('customer load (Wh)', df['load_customer'].sum())
+pretty_print('end battery charge (Wh)', df.ix[len(df)-1]['battery_energy'])
+pretty_print('solar size (m^2)', generation_size)
 
+# output plot of timesteps
 plot = True
 #plot = False
 if plot:
