@@ -4,6 +4,31 @@ import pvsim as pvs
 import datetime as dt
 import scipy.optimize as spo
 
+# configuration
+
+inverter_type = 'typical'
+#inverter_type = 'flat'
+
+load_type = 'day'
+#load_type = 'night'
+#load_type = 'continuous'
+
+
+
+
+# inverter curves
+flat_output_curve = {'output_power':[0, 750],
+                     'input_power' :[0, 750/.94]}
+
+typical_output_curve = {'output_power':[ 0, 375, 750],
+                        'input_power':[0+13, 375/.75, 750/.94]}
+
+if inverter_type == 'flat':
+    output_curve = flat_output_curve
+
+if inverter_type == 'typical':
+    output_curve = typical_output_curve
+
 def get_load_from_csv():
     df = p.read_csv('week_of_data.csv', index_col=0, parse_dates=True)
     #return df['power'].dropna().values
@@ -62,7 +87,7 @@ todo: change solver for panel size
 '''
 def solve_wrapper(A):
     # create objects for simulation
-    inverter = pvs.Inverter()
+    inverter = pvs.Inverter(output_curve)
     battery = pvs.Battery()
     solar = pvs.Solar(lat=14)
     panel = pvs.Panel(solar, area=A, efficiency=0.20, el_tilt=0, az_tilt=0)
@@ -106,10 +131,20 @@ def pretty_print(tag, value, col_width=30):
     print tag.ljust(col_width),
     print '%.2f' % value
 
-#load = night_load()
-load = day_load()
-#load = cont_load()
+
+
+if load_type == 'day':
+    load = day_load()
+
+if load_type == 'night':
+    load = night_load()
+
+if load_type == 'continuous':
+    load = cont_load()
+
 #load = get_load_from_csv()
+
+
 
 # get solution using solve wrapper
 solution = spo.fsolve(solve_wrapper, 2)
@@ -117,7 +152,7 @@ generation_size = solution[0]
 
 # pass this solution to run_time_step (redundantly)
 # to get detailed simulation output
-inverter = pvs.Inverter()
+inverter = pvs.Inverter(output_curve)
 battery = pvs.Battery()
 solar = pvs.Solar(lat=14)
 panel = pvs.Panel(solar, area=generation_size, efficiency=0.20, el_tilt=0, az_tilt=0)
@@ -129,6 +164,8 @@ df = run_time_step(inverter,
                   load)
 
 # output results to stdout
+print 'inverter type', inverter_type
+print 'load type', load_type
 pretty_print('battery excursion (Wh)', df['battery_energy'].max() - df['battery_energy'].min())
 pretty_print('customer load (Wh)', df['load_customer'].sum())
 pretty_print('end battery charge (Wh)', df.ix[len(df)-1]['battery_energy'])
@@ -136,7 +173,7 @@ pretty_print('solar size (m^2)', generation_size)
 
 # output plot of timesteps
 plot = True
-#plot = False
+plot = False
 if plot:
     import matplotlib.pyplot as plt
     f, ax = plt.subplots(1, 1)
