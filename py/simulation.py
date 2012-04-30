@@ -10,27 +10,12 @@ inverter_type = 'typical'
 #inverter_type = 'flat'
 
 load_type = 'day'
-#load_type = 'night'
-#load_type = 'continuous'
-
-
-
-
-# inverter curves
-flat_output_curve = {'output_power':[0, 750],
-                     'input_power' :[0, 750/.94]}
-
-typical_output_curve = {'output_power':[ 0, 375, 750],
-                        'input_power':[0+13, 375/.75, 750/.94]}
-
-if inverter_type == 'flat':
-    output_curve = flat_output_curve
-
-if inverter_type == 'typical':
-    output_curve = typical_output_curve
+load_type = 'night'
+load_type = 'continuous'
+#load_type = 'village'
 
 def get_load_from_csv():
-    df = p.read_csv('week_of_data.csv', index_col=0, parse_dates=True)
+    df = p.read_csv('ml05.csv', index_col=0, parse_dates=True)
     #return df['power'].dropna().values
     #df = df['power'].dropna()
     return p.Series(df['power'].values, index=df.index).dropna()
@@ -85,10 +70,10 @@ def run_time_step(inverter,
 '''
 todo: change solver for panel size
 '''
-def solve_wrapper(A):
+def solve_wrapper(A, output_curve, battery_efficiency_curve, load):
     # create objects for simulation
     inverter = pvs.Inverter(output_curve)
-    battery = pvs.Battery()
+    battery = pvs.Battery(battery_efficiency_curve)
     solar = pvs.Solar(lat=14)
     panel = pvs.Panel(solar, area=A, efficiency=0.20, el_tilt=0, az_tilt=0)
 
@@ -101,8 +86,8 @@ def solve_wrapper(A):
     return df.ix[len(df)-1]['battery_energy']
 
 # create date range to get insolation
-date_start = dt.datetime(2012, 2, 1)
-date_end = dt.datetime(2012, 2, 2)
+date_start = dt.datetime(2012, 3, 23)
+date_end = dt.datetime(2012, 3, 24)
 rng = p.DateRange(date_start, date_end, offset=p.DateOffset(hours=1))
 
 # create load profile and series object
@@ -141,54 +126,70 @@ def pretty_print(tag, value, col_width=30):
     print '%.2f' % value
 
 
+def run_simulation(inverter_type='typical', load_type='day', plot=False):
 
-if load_type == 'day':
-    load = day_load()
+    # battery curve
+    battery_efficiency_curve = {'output_power':[0, 1000],
+                                'efficiency':[0.75,   0.75]}
+    battery_efficiency_curve = {'output_power':[0, 1000],
+                                'efficiency':[0.95,   0.95]}
 
-if load_type == 'night':
-    load = night_load()
+    # inverter curves
+    flat_output_curve = {'output_power':[0, 750],
+                         'input_power' :[0, 750/.94]}
+    typical_output_curve = {'output_power':[ 0, 375, 750],
+                            'input_power':[0+13, 375/.75, 750/.94]}
 
-if load_type == 'continuous':
-    load = cont_load()
+    if inverter_type == 'flat':
+        output_curve = flat_output_curve
+    if inverter_type == 'typical':
+        output_curve = typical_output_curve
 
-#load = get_load_from_csv()
+    if load_type == 'day':
+        load = day_load()
+    if load_type == 'night':
+        load = night_load()
+    if load_type == 'continuous':
+        load = cont_load()
+    if load_type == 'village':
+        load = get_load_from_csv()
+    load = normalize_load(load, 3000)
+    #print load
 
+    # get solution using solve wrapper
+    solution = spo.fsolve(solve_wrapper, 2, args=(output_curve, battery_efficiency_curve, load))
+    generation_size = solution[0]
 
+    # pass this solution to run_time_step (redundantly)
+    # to get detailed simulation output
+    inverter = pvs.Inverter(output_curve)
+    battery = pvs.Battery(battery_efficiency_curve)
+    solar = pvs.Solar(lat=14)
+    panel = pvs.Panel(solar, area=generation_size, efficiency=0.20, el_tilt=0, az_tilt=0)
 
-# get solution using solve wrapper
-solution = spo.fsolve(solve_wrapper, 2)
-generation_size = solution[0]
+    df = run_time_step(inverter,
+                      battery,
+                      solar,
+                      panel,
+                      load)
 
-# pass this solution to run_time_step (redundantly)
-# to get detailed simulation output
-inverter = pvs.Inverter(output_curve)
-battery = pvs.Battery()
-solar = pvs.Solar(lat=14)
-panel = pvs.Panel(solar, area=generation_size, efficiency=0.20, el_tilt=0, az_tilt=0)
+    # output results to stdout
+    print 'inverter type', inverter_type
+    print 'load type', load_type
+    pretty_print('battery excursion (Wh)', df['battery_energy'].max() - df['battery_energy'].min())
+    pretty_print('customer load (Wh)', df['load_customer'].sum())
+    pretty_print('end battery charge (Wh)', df.ix[len(df)-1]['battery_energy'])
+    pretty_print('solar size (m^2)', generation_size)
 
-df = run_time_step(inverter,
-                  battery,
-                  solar,
-                  panel,
-                  load)
-
-# output results to stdout
-print 'inverter type', inverter_type
-print 'load type', load_type
-pretty_print('battery excursion (Wh)', df['battery_energy'].max() - df['battery_energy'].min())
-pretty_print('customer load (Wh)', df['load_customer'].sum())
-pretty_print('end battery charge (Wh)', df.ix[len(df)-1]['battery_energy'])
-pretty_print('solar size (m^2)', generation_size)
-
-# output plot of timesteps
-plot = True
-plot = False
-if plot:
-    import matplotlib.pyplot as plt
-    f, ax = plt.subplots(1, 1)
-    ax.plot(df['load_customer'])
-    ax.plot(df['load_inverter'])
-    ax.plot(df['solar_power'])
-    ax.plot(df['battery_energy'])
-    ax.grid(True)
-    plt.show()
+    # output plot of timesteps
+    #plot = True
+    #plot = False
+    if plot:
+        import matplotlib.pyplot as plt
+        f, ax = plt.subplots(1, 1)
+        ax.plot(df['load_customer'])
+        ax.plot(df['load_inverter'])
+        ax.plot(df['solar_power'])
+        ax.plot(df['battery_energy'])
+        ax.grid(True)
+        plt.show()
