@@ -127,6 +127,15 @@ def cont_load():
     load = p.Series(load_values, index=rng)
     return load
 
+'''
+takes a load in the form of a pandas series and normalizes it such that
+the average daily energy in the load is equal to normalized_daily_load
+'''
+def normalize_load(load, normalized_daily_load):
+    load_days = (load.index[-1] - load.index[0]).total_seconds() / 24 / 60 / 60
+    load_daily_average = load.sum() / load_days
+    return load / load_daily_average * normalized_daily_load
+
 def pretty_print(tag, value, col_width=30):
     print tag.ljust(col_width),
     print '%.2f' % value
