@@ -109,21 +109,21 @@ rng = p.DateRange(date_start, date_end, offset=p.DateOffset(hours=1))
 # 9, 6, 10
 # 18, 6, 1
 def night_load():
-    load_values = [0] * 18
-    load_values.extend([300] * 6)
-    load_values.extend([0] * 1)
+    load_values = [0.0] * 18
+    load_values.extend([300.0] * 6)
+    load_values.extend([0.0] * 1)
     load = p.Series(load_values, index=rng)
     return load
 
 def day_load():
-    load_values = [0] * 9
-    load_values.extend([300] * 6)
-    load_values.extend([0] * 10)
+    load_values = [0.0] * 9
+    load_values.extend([300.0] * 6)
+    load_values.extend([0.0] * 10)
     load = p.Series(load_values, index=rng)
     return load
 
 def cont_load():
-    load_values = [1800/25.] * 25
+    load_values = [1800.0/25.] * 25
     load = p.Series(load_values, index=rng)
     return load
 
