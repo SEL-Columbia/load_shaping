@@ -15,7 +15,7 @@ load_type = 'continuous'
 #load_type = 'village'
 
 def get_load_from_csv():
-    df = p.read_csv('ml05.csv', index_col=0, parse_dates=True)
+    df = p.read_csv('ml05-1day.csv', index_col=0, parse_dates=True)
     #return df['power'].dropna().values
     #df = df['power'].dropna()
     return p.Series(df['power'].values, index=df.index).dropna()
@@ -124,7 +124,6 @@ def normalize_load(load, normalized_daily_load):
 def pretty_print(tag, value, col_width=30):
     print tag.ljust(col_width),
     print '%.2f' % value
-
 
 def run_simulation(inverter_type='typical', load_type='day', plot=False):
 
