@@ -186,9 +186,14 @@ def run_simulation(inverter_type='typical', load_type='day', plot=False):
     if plot:
         import matplotlib.pyplot as plt
         f, ax = plt.subplots(1, 1)
-        ax.plot(df['load_customer'])
-        ax.plot(df['load_inverter'])
-        ax.plot(df['solar_power'])
-        ax.plot(df['battery_energy'])
+        #ax.plot(df['load_customer'],  label='AC Load (W)')
+        ax.plot(df['load_inverter'],  label='Inverter DC Load (W)')
+        ax.plot(df['solar_power'],    label='Solar Generation (W)')
+        ax.plot(df['battery_energy'], label='Battery Energy (Wh)')
+        ax.set_xlabel('Hour of Day')
         ax.grid(True)
+        ax.legend(loc='best')
         plt.show()
+
+def calc_battery_cost(battery_size, DOD, cost):
+    return battery_size / DOD * cost
