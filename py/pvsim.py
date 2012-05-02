@@ -18,8 +18,9 @@ class Inverter:
 
 
 class Battery:
-    efficiency_curve = {'output_power':[0, 1000],
-                       'efficiency':[0.75,   0.75]}
+
+    def __init__(self, efficiency_curve):
+        self.efficiency_curve = efficiency_curve
 
     def efficiency(self, load):
         efficiency = spi.interp1d(self.efficiency_curve['output_power'],
