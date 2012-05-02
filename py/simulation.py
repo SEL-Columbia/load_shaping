@@ -125,13 +125,14 @@ def pretty_print(tag, value, col_width=30):
     print tag.ljust(col_width),
     print '%.2f' % value
 
-def run_simulation(inverter_type='typical', load_type='day', plot=False):
+def run_simulation(battery_dict,
+                   inverter_type='typical',
+                   load_type='day',
+                   plot=False,
+                   verbose=True):
 
     # battery curve
-    battery_efficiency_curve = {'output_power':[0, 1000],
-                                'efficiency':[0.75,   0.75]}
-    battery_efficiency_curve = {'output_power':[0, 1000],
-                                'efficiency':[0.95,   0.95]}
+    battery_efficiency_curve = battery_dict['battery_efficiency_curve']
 
     # inverter curves
     flat_output_curve = {'output_power':[0, 750],
@@ -156,7 +157,7 @@ def run_simulation(inverter_type='typical', load_type='day', plot=False):
     #print load
 
     # get solution using solve wrapper
-    solution = spo.fsolve(solve_wrapper, 2, args=(output_curve, battery_efficiency_curve, load))
+    solution = spo.fsolve(solve_wrapper, 3, args=(output_curve, battery_efficiency_curve, load))
     generation_size = solution[0]
 
     # pass this solution to run_time_step (redundantly)
@@ -172,13 +173,27 @@ def run_simulation(inverter_type='typical', load_type='day', plot=False):
                       panel,
                       load)
 
+    battery_size = df['battery_energy'].max() - df['battery_energy'].min()
+    battery_cost = calc_battery_cost(battery_size, battery_dict['DOD'], battery_dict['cost'])
+
     # output results to stdout
-    print 'inverter type', inverter_type
-    print 'load type', load_type
-    pretty_print('battery excursion (Wh)', df['battery_energy'].max() - df['battery_energy'].min())
-    pretty_print('customer load (Wh)', df['load_customer'].sum())
-    pretty_print('end battery charge (Wh)', df.ix[len(df)-1]['battery_energy'])
-    pretty_print('solar size (m^2)', generation_size)
+    if verbose:
+        #print 'inverter type', inverter_type
+        #print 'load type', load_type
+        print 'battery cost', battery_cost
+        #pretty_print('battery excursion (Wh)', battery_size)
+        pretty_print('customer load (Wh)', df['load_customer'].sum())
+        #pretty_print('end battery charge (Wh)', df.ix[len(df)-1]['battery_energy'])
+        #pretty_print('solar size (m^2)', generation_size)
+
+    print (inverter_type + ' ' + load_type + ' ' + battery_dict['type']).ljust(30),
+    print '&',
+    print '%.2f' % generation_size,
+    print '&',
+    print '%.2f' % (battery_size/1000.),
+    print '&',
+    print '%.2f' % battery_cost,
+    print '\\\\'
 
     # output plot of timesteps
     #plot = True
