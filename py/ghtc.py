@@ -25,23 +25,21 @@ pbc_dict = {'type' : 'lead carbon',
              }
 
 def table_2(plot=False, verbose=False):
-    print 'table 2'
+    print '%table 2'
     for load in ['day', 'night', 'continuous', 'village']:
         for battery in [lead_dict]:
             sim.run_simulation(battery, inverter_type='typical', load_type=load, plot=plot, verbose=verbose)
 
 def table_3(plot=False, verbose=False):
-    print 'table 3'
+    print '%table 3'
     for load in ['day', 'night', 'continuous', 'village']:
         for battery in [lead_dict]:
             sim.run_simulation(battery, inverter_type='flat', load_type=load, plot=plot, verbose=verbose)
 
 
 
-def table_5():
-    print 'table 5'
-    plot = False
-    verbose = False
+def table_5(plot=False, verbose=False):
+    print '%table 5'
     for load in ['day', 'night', 'continuous', 'village']:
         for battery in [lead_dict, lith_dict, pbc_dict]:
             sim.run_simulation(battery, inverter_type='typical', load_type=load, plot=plot, verbose=verbose)
@@ -49,5 +47,5 @@ def table_5():
 
 if __name__ == '__main__':
     #table_2(plot=False, verbose=False)
-    table_3()
-    #table_5()
+    #table_3()
+    table_5()
