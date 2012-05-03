@@ -70,12 +70,12 @@ def run_time_step(inverter,
 '''
 todo: change solver for panel size
 '''
-def solve_wrapper(A, output_curve, battery_efficiency_curve, load):
+def solve_wrapper(A, output_curve, battery_efficiency_curve, load, panel_efficiency):
     # create objects for simulation
     inverter = pvs.Inverter(output_curve)
     battery = pvs.Battery(battery_efficiency_curve)
     solar = pvs.Solar(lat=14)
-    panel = pvs.Panel(solar, area=A, efficiency=0.20, el_tilt=0, az_tilt=0)
+    panel = pvs.Panel(solar, area=A, efficiency=panel_efficiency, el_tilt=0, az_tilt=0)
 
     df = run_time_step(inverter,
                       battery,
@@ -131,6 +131,8 @@ def run_simulation(battery_dict,
                    plot=False,
                    verbose=True):
 
+    panel_efficiency = 0.135
+
     # battery curve
     battery_efficiency_curve = battery_dict['battery_efficiency_curve']
 
@@ -157,7 +159,8 @@ def run_simulation(battery_dict,
     #print load
 
     # get solution using solve wrapper
-    solution = spo.fsolve(solve_wrapper, 3, args=(output_curve, battery_efficiency_curve, load))
+    solution = spo.fsolve(solve_wrapper, 4, args=(output_curve, battery_efficiency_curve,
+                                                  load, panel_efficiency))
     generation_size = solution[0]
 
     # pass this solution to run_time_step (redundantly)
@@ -165,7 +168,7 @@ def run_simulation(battery_dict,
     inverter = pvs.Inverter(output_curve)
     battery = pvs.Battery(battery_efficiency_curve)
     solar = pvs.Solar(lat=14)
-    panel = pvs.Panel(solar, area=generation_size, efficiency=0.20, el_tilt=0, az_tilt=0)
+    panel = pvs.Panel(solar, area=generation_size, efficiency=0.135, el_tilt=0, az_tilt=0)
 
     df = run_time_step(inverter,
                       battery,
@@ -173,31 +176,36 @@ def run_simulation(battery_dict,
                       panel,
                       load)
 
+    panel_peak = generation_size * 0.135
     battery_size = df['battery_energy'].max() - df['battery_energy'].min()
     battery_cost = calc_battery_cost(battery_size, battery_dict['DOD'], battery_dict['cost'])
+    battery_npv = npv(0.07, create_battery_cashflow(battery_cost, battery_dict['life']))
+
+    # print out row of latex table
+    print (inverter_type + ' ' + load_type + ' ' + battery_dict['type']).ljust(30),
+    print '&',
+    #print '%.2f' % generation_size,
+    print '%.2f' % panel_peak,
+    print '&',
+    print '%.2f' % (battery_size/1000.),
+    print '&',
+    print '%.0f' % battery_npv,
+    print '&',
+    print '%.0f' % (panel_peak * 1000),
+    print '\\\\'
 
     # output results to stdout
     if verbose:
         #print 'inverter type', inverter_type
         #print 'load type', load_type
         print 'battery cost', battery_cost
+        print 'battery npv', battery_npv
         #pretty_print('battery excursion (Wh)', battery_size)
-        pretty_print('customer load (Wh)', df['load_customer'].sum())
+        #pretty_print('customer load (Wh)', df['load_customer'].sum())
         #pretty_print('end battery charge (Wh)', df.ix[len(df)-1]['battery_energy'])
         #pretty_print('solar size (m^2)', generation_size)
 
-    print (inverter_type + ' ' + load_type + ' ' + battery_dict['type']).ljust(30),
-    print '&',
-    print '%.2f' % generation_size,
-    print '&',
-    print '%.2f' % (battery_size/1000.),
-    print '&',
-    print '%.2f' % battery_cost,
-    print '\\\\'
-
     # output plot of timesteps
-    #plot = True
-    #plot = False
     if plot:
         import matplotlib.pyplot as plt
         f, ax = plt.subplots(1, 1)
@@ -212,3 +220,14 @@ def run_simulation(battery_dict,
 
 def calc_battery_cost(battery_size, DOD, cost):
     return battery_size / DOD * cost
+
+def create_battery_cashflow(cost, life, lifetime=20):
+    tl = [cost] + [0] * (life - 1)
+    l = tl * (lifetime/len(tl) + 1)
+    return l[:21]
+
+def npv(rate, cashflows):
+    total = 0.0
+    for i, cashflow in enumerate(cashflows):
+        total += cashflow / (1 + rate)**i
+    return total
