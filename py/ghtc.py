@@ -40,14 +40,21 @@ def table_3(plot=False, verbose=False):
 def table_5(plot=False, verbose=False):
     print '%table 5'
     output = []
-    index = []
+    both_index = []
+    load_index = []
+    battery_index = []
     for load in ['day', 'night', 'continuous', 'lighting', 'freezer']:
         for battery in [lead_dict, lith_dict, pbc_dict]:
             d = sim.run_simulation(battery, inverter_type='typical', load_type=load, plot=plot, verbose=verbose)
+            d['battery_type'] = battery['type']
+            d['load_type'] = load
             output.append(d)
-            index.append(load + ' ' + battery['type'])
+
+            both_index.append(load + ' ' + battery['type'])
+            load_index.append(load)
+            battery_index.append(battery['type'])
         print
-    df = p.DataFrame(output, index)
+    df = p.DataFrame(output)
     return df
 
 if __name__ == '__main__':
