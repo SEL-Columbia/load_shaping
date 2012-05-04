@@ -14,8 +14,15 @@ load_type = 'night'
 load_type = 'continuous'
 #load_type = 'village'
 
-def get_load_from_csv():
+
+def lighting_load():
     df = p.read_csv('ml05-1day.csv', index_col=0, parse_dates=True)
+    #return df['power'].dropna().values
+    #df = df['power'].dropna()
+    return p.Series(df['power'].values, index=df.index).dropna()
+
+def freezer_load():
+    df = p.read_csv('ml06-1day.csv', index_col=0, parse_dates=True)
     #return df['power'].dropna().values
     #df = df['power'].dropna()
     return p.Series(df['power'].values, index=df.index).dropna()
@@ -153,8 +160,13 @@ def run_simulation(battery_dict,
         load = night_load()
     if load_type == 'continuous':
         load = cont_load()
-    if load_type == 'village':
-        load = get_load_from_csv()
+    #if load_type == 'village':
+        #load = get_load_from_csv()
+    if load_type == 'lighting':
+        load = lighting_load()
+    if load_type == 'freezer':
+        load = freezer_load()
+
     load = normalize_load(load, 3000)
     #print load
 
@@ -176,22 +188,24 @@ def run_simulation(battery_dict,
                       panel,
                       load)
 
-    panel_peak = generation_size * 0.135
-    battery_size = df['battery_energy'].max() - df['battery_energy'].min()
-    battery_cost = calc_battery_cost(battery_size, battery_dict['DOD'], battery_dict['cost'])
+    panel_cost_per_kW = 1000
+    panel_peak_kW = generation_size * 0.135
+    battery_size_kWh = (df['battery_energy'].max() - df['battery_energy'].min())/1000.
+    battery_cost = calc_battery_cost(battery_size_kWh*1000, battery_dict['DOD'], battery_dict['cost'])
     battery_npv = npv(0.07, create_battery_cashflow(battery_cost, battery_dict['life']))
+    panel_cost = panel_peak_kW * panel_cost_per_kW
 
     # print out row of latex table
     print (inverter_type + ' ' + load_type + ' ' + battery_dict['type']).ljust(30),
     print '&',
     #print '%.2f' % generation_size,
-    print '%.2f' % panel_peak,
+    print '%.2f' % panel_peak_kW,
     print '&',
-    print '%.2f' % (battery_size/1000.),
+    print '%.2f' % battery_size_kWh,
     print '&',
     print '%.0f' % battery_npv,
     print '&',
-    print '%.0f' % (panel_peak * 1000),
+    print '%.0f' % panel_cost,
     print '\\\\'
 
     # output results to stdout
@@ -217,6 +231,11 @@ def run_simulation(battery_dict,
         ax.grid(True)
         ax.legend(loc='best')
         plt.show()
+    return {'panel_peak_kW' : panel_peak_kW,
+            'battery_size_kWh' : battery_size_kWh,
+            'battery_npv' : battery_npv,
+            'panel_cost' : panel_cost,
+            'battery_cost' : battery_cost}
 
 def calc_battery_cost(battery_size, DOD, cost):
     return battery_size / DOD * cost
