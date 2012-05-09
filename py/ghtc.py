@@ -41,6 +41,8 @@ def table_3(plot=False, verbose=False):
 def table_5(plot=False, verbose=False):
     print '% table 5'
     print '%', dt.datetime.now()
+    import os
+    os.system('git rev-parse HEAD')
     output = []
     both_index = []
     load_index = []
