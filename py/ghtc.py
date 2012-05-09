@@ -32,8 +32,12 @@ def table_2(plot=False, verbose=False):
         for battery in [lead_dict]:
             sim.run_simulation(battery, inverter_type='typical', load_type=load, plot=plot, verbose=verbose)
 
-def table_3(plot=False, verbose=False):
-    print '%table 3'
+def table_inverter(plot=False, verbose=False):
+    print '% table_inverter'
+    print '%', dt.datetime.now()
+    import os
+    os.system('git rev-parse HEAD')
+
     for load in ['day', 'night', 'continuous', 'lighting', 'freezer']:
         for battery in [lead_dict]:
             sim.run_simulation(battery, inverter_type='flat', load_type=load, plot=plot, verbose=verbose)
@@ -63,5 +67,5 @@ def table_5(plot=False, verbose=False):
 
 if __name__ == '__main__':
     #table_2(plot=False, verbose=False)
-    #table_3()
-    df = table_5()
+    table_inverter()
+    #df = table_5()
