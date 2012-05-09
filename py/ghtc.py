@@ -1,5 +1,6 @@
 import simulation as sim
 import pandas as p
+import datetime as dt
 
 lead_dict = {'type' : 'lead acid',
              'cost' : 0.14,
@@ -38,7 +39,8 @@ def table_3(plot=False, verbose=False):
             sim.run_simulation(battery, inverter_type='flat', load_type=load, plot=plot, verbose=verbose)
 
 def table_5(plot=False, verbose=False):
-    print '%table 5'
+    print '% table 5'
+    print '%', dt.datetime.now()
     output = []
     both_index = []
     load_index = []
