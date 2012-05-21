@@ -19,6 +19,8 @@ Long = 6.266667;
 LTM = 0;
 rho = 0.2;
 [I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho);
+% end of subfunction inputs 
+
 supply = I_C*pvArea; %W
 batChar = zeros(length(demand),1);
 
@@ -31,4 +33,8 @@ for ix = 1:(length(demand)-1);
         batChar(ix+1) = 0;
     end
 end
-endfunction
+plot(I_C,'r')
+hold on
+plot(batChar)
+
+end
