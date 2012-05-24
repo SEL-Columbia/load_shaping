@@ -19,7 +19,17 @@ Long = 6.266667;
 LTM = 0;
 rho = 0.2;
 [I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho);
-% end of subfunction inputs 
+
+
+%To create daily data;
+I_CDaily = ones(365,1)*-999;
+
+for ix = 1:365
+    day = I_C((24*ix-23):(ix*24));
+    I_CDaily(ix) = sum(day);
+end
+I_C = I_CDaily;
+plot(I_C)
 
 supply = I_C*pvArea; %W
 batChar = zeros(length(demand),1);
@@ -29,12 +39,12 @@ for ix = 1:(length(demand)-1);
     if batChar(ix+1) > batCap
         batChar(ix+1) = batCap;
     end
-    if batChar(ix+1) < 0
-        batChar(ix+1) = 0;
+    if batChar(ix+1) < batMin
+        batChar(ix+1) = batMin;
     end
 end
-plot(I_C,'r')
-hold on
-plot(batChar)
+ plot(I_C,'b')
+% hold on
+% plot(batChar)
 
 end
