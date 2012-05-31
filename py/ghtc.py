@@ -1,3 +1,7 @@
+'''
+imports simulation module and runs specific simulations for the GHTC
+2012 submission on size optimization using collected village data.
+'''
 import simulation as sim
 import pandas as p
 import datetime as dt

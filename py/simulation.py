@@ -1,3 +1,7 @@
+'''
+Methods and functions to run energy balance simulation based on objects
+created in pvsim.py
+'''
 import numpy as np
 import pandas as p
 import pvsim as pvs
@@ -16,12 +20,18 @@ load_type = 'continuous'
 
 
 def lighting_load():
+    '''
+    loads a 'lighting-only' load from village data
+    '''
     df = p.read_csv('ml05-1day.csv', index_col=0, parse_dates=True)
     #return df['power'].dropna().values
     #df = df['power'].dropna()
     return p.Series(df['power'].values, index=df.index).dropna()
 
 def freezer_load():
+    '''
+    returns a Series object with a freezer village load
+    '''
     df = p.read_csv('ml06-1day.csv', index_col=0, parse_dates=True)
     #return df['power'].dropna().values
     #df = df['power'].dropna()
@@ -33,6 +43,11 @@ def run_time_step(inverter,
                   solar,
                   panel,
                   load):
+    '''
+    iterates over load and returns a dataframe with a dictionary result
+    that contains the timeseries for the customer load, solar power,
+    inverter power and the battery energy at the end of simulation.
+    '''
 
     battery_energy = [0]
     lca = []
@@ -74,10 +89,11 @@ def run_time_step(inverter,
 
     return df
 
-'''
-todo: change solver for panel size
-'''
 def solve_wrapper(A, output_curve, battery_efficiency_curve, load, panel_efficiency):
+    '''
+    wraps the run_time_step method and returns only the battery energy
+    so that it can be run in a solver routine.
+    '''
     # create objects for simulation
     inverter = pvs.Inverter(output_curve)
     battery = pvs.Battery(battery_efficiency_curve)
@@ -119,11 +135,11 @@ def cont_load():
     load = p.Series(load_values, index=rng)
     return load
 
-'''
-takes a load in the form of a pandas series and normalizes it such that
-the average daily energy in the load is equal to normalized_daily_load
-'''
 def normalize_load(load, normalized_daily_load):
+    '''
+    takes a load in the form of a pandas series and normalizes it such that
+    the average daily energy in the load is equal to normalized_daily_load
+    '''
     load_days = (load.index[-1] - load.index[0]).total_seconds() / 24 / 60 / 60
     load_daily_average = load.sum() / load_days
     return load / load_daily_average * normalized_daily_load
@@ -137,7 +153,25 @@ def run_simulation(battery_dict,
                    load_type='day',
                    plot=False,
                    verbose=True):
+    '''
+    big wrapper method to take in the various parameters for a
+    simulation and run the simulation.
 
+    parameters
+    ----------
+    battery_dict : dict
+        contains information about battery efficiency, etc.
+    inverter_type : string
+        specifies type of inverter ('flat', 'typical')
+    load_type : string
+        specifies which load to use ('day', 'night', 'continuous',
+        'lighting', 'freezer')
+    plot : boolean
+        flag to determine if output plot is created
+    verbose : boolean
+        flag to determine level of output to console
+    '''
+    # TODO: consider decomposing into smaller functions
     panel_efficiency = 0.135
 
     # battery curve
@@ -170,7 +204,7 @@ def run_simulation(battery_dict,
     load = normalize_load(load, 3000)
     #print load
 
-    # get solution using solve wrapper
+    # get solution using solve wrapper for a fixed set of conditions
     solution = spo.fsolve(solve_wrapper, 4, args=(output_curve, battery_efficiency_curve,
                                                   load, panel_efficiency))
     generation_size = solution[0]
