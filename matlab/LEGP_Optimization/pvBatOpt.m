@@ -6,7 +6,7 @@ pvStep = 100; % fineness by which PV size can be changed (Watts)
 batStep = 100; % finess by which Batter size may be changed (W-hr)
 pvCost = 3;% cost of pv ($/Watt)
 batCost = 5;% cost of battery capacity ($/W-hr)
-LEGPDesired = [0.05,0.1,0.15,0.20,0.25,0.3,0.35,.4];
+LEGPDesired = [0.10];%,0.1,0.15,0.20,0.25,0.3,0.35,.4];
 best = zeros(length(LEGPDesired),4);
 % call upon SuppDem Sum
 dates = MaliNTSData2005(:,1:4);
@@ -31,8 +31,8 @@ for jx = 1:length(LEGPDesired);
     
     for ix = 1:100
         [batCap, LEGP_ach] = batCapCal(dates,resource,demand, pvCap, LEGPDesired(jx),batStep, batMin);
-        pvCap = pvCap +100;
         pvBatCurve(ix,:) = [batCap, pvCap];
+        pvCap = pvCap +100;
     end
     
     pvBatCurve = pvBatCurve(pvBatCurve(:,1)<10000,:);

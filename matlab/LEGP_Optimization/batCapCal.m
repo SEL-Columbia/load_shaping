@@ -47,5 +47,5 @@ while LEGPTemp >= LEGP
         break
     end
 end
-
+batCap = batCap -100;
 LEGP_ach = LEGPTemp;
