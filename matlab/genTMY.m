@@ -4,12 +4,13 @@
 
 n = 28;
 years = 10;
-X = zeros(n,12,years);
-F = zeros(n,12,years);
-delta = zeros(n,12,years);
-FS = zeros(12,years);
+months = 12;
+[r, c] = size(radMat);
+X = zeros(n,months,years);
+F = zeros(n,months,years);
 
-
+delta = zeros(n,months,years);
+FS = zeros(months,years);
 Daily = zeros(365,2);
 for ix = 1:years
     %find the sum of the solar energy for each day
@@ -22,7 +23,7 @@ for ix = 1:years
     B = datevec(Daily(:,1));
     kx = 1;
     %isolate a month from the data set
-    for months = 1:12
+    for months = 1:months
         lx = 1;
         tempMonth = [];
         while B(kx,2) == months;
@@ -39,7 +40,7 @@ for ix = 1:years
 end
 % sort randome samples within each month from least to greatest
 for ix = 1:years
-    for jx = 1:12
+    for jx = 1:months
         X(:,jx,ix) = sort(X(:,jx,ix),'ascend');
         for kx = 1:n
             F(kx,jx,ix) = 1-exp(-X(kx,jx,ix)/mean(X(:,jx,ix)));
@@ -50,6 +51,30 @@ end
 
 for ix = 1:years
     for jx = 1:months
-        FS(jx,ix) = 1/n*sum(delta(:,jx,ix));
+        FS(jx,ix) = 1/n*sum(delta(:,jx,ix));%each col is a year
+    end
+end
+
+% Indicates the months chose for TMY and corresponding minimum FS values
+TMYDateStamps = zeros(months,3); % [month, year, year indices]
+TMYDateStamps(:,1) = 1:months; % ***modify if not complete TMY*** script
+%should run. Month numbers will be off (They will always start at 1)
+minFS = zeros(months,1);
+TMYData = zeros(r,1);
+for ix = 1:months
+    [minFS(ix), yearTemp] = min(FS(ix,:));
+    TMYDateStamps(ix,3) = yearTemp;
+    yearTemp = datevec(dateMat(1,yearTemp)');
+    TMYDateStamps(ix,2) = yearTemp(1);
+end
+
+% Form TMY data set
+for ix = 1:months
+    dateTemp = datevec(dateMat(:,TMYDateStamps(ix,3)));
+    radIndices = find(dateTemp(:,2)==ix);
+    if ix ==1
+        TMY = radMat(radIndices,TMYDateStamps(ix,3));
+    else
+        TMY((length(TMY)+1):(length(TMY)+length(radMat(radIndices,TMYDateStamps(ix,3))))) = radMat(radIndices,TMYDateStamps(ix,3));
     end
 end
