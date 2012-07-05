@@ -42,7 +42,7 @@ def table_inverter(plot=False, verbose=False):
     import os
     os.system('git rev-parse HEAD')
 
-    for load in ['day', 'night', 'continuous', 'lighting', 'freezer']:
+    for load in ['day', 'night', 'continuous']: #'lighting', 'freezer']:
         for battery in [lead_dict]:
             sim.run_simulation(battery, inverter_type='flat', load_type=load, plot=plot, verbose=verbose)
 

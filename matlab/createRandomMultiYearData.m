@@ -12,7 +12,7 @@ for ix = 1:10
     dateMat(:,ix) = datenum(pretendDates);
     pretendDates(:,1) = pretendDates(:,1)+1;
     %creating pretend radiation data matrix
-    modify = find(MaliNTSData2005(:,ix)>=0);
-    radMat(modify,ix) = MaliNTSData2005(modify,ix)+50*2*(rand(length(modify),1)-.5);
+    modify = find(MaliNTSData2005(:,5)>=0);
+    radMat(modify,ix) = MaliNTSData2005(modify,5)+50*2*(rand(length(modify),1)-.5);
     radMat(radMat < 0) = 0; 
 end

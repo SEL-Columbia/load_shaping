@@ -5,11 +5,11 @@ pvArea = pvCap/max(resource);
 
 % Subfunction inputs
 phi_c = 0;
-sigma = 25.683;%13.45;
+sigma = 13.45;
 I_B = resource;
-L = 25.683;%13.45;
-Long = -32.65;%6.266667;
-LTM = -30;%0;
+L = 13.45;
+Long = 6.266667;
+LTM = 0;
 rho = 0.2;
 [I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho);
 
