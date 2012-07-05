@@ -1,4 +1,4 @@
-function [batChar, LOLP, LEGP] = SuppDemSum (dates,resource,demand, pvCap, batCap, batMin);
+function [batChar, LEG, LEGP] = SuppDemSum (dates,resource,demand, pvCap, batCap, batMin);
 
 % Using energy method calculates battery charge state over a given
 % time frame. The inputs are a date matrix (dates), the annual
@@ -6,17 +6,18 @@ function [batChar, LOLP, LEGP] = SuppDemSum (dates,resource,demand, pvCap, batCa
 % (batcap), and the minimum battery charge state (batMin).
 % dates(1,:) = [2005, 1, 1, 1]  %[year, month,day,hour]
 % Author: Mitchell Lee
-
+[r,c] = size(dates);
+dates = [dates,ones(r,2)];
 time = datenum(dates);
 pvArea = pvCap/max(resource); 
 
 % Subfunction inputs
 phi_c = 0;
-sigma = 25.683;%18.1;%0.517;%13.45;
+sigma = 13.45;
 I_B = resource;
-L = 25.683;%18.1;%0.517;%13.45;
-Long = -32.65;%;15.95;%-25.2;%6.266667;
-LTM = -30;%0;%-30;%0
+L = 13.45;
+Long = 6.266667;
+LTM =0;%-30;%0
 rho = 0.2;
 [I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho);
 
@@ -51,8 +52,7 @@ for ix = 1:(length(demand)-1);
     end
 end
 LEGP = sum(LEG)/sum(demand);
-LOLP = length(find(LEG>0))/length(LEG);
-
+%LOLP = length(find(LEG>0))/length(LEG);
 % hold on
 % plot(batChar)
 end
