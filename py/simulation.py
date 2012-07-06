@@ -38,6 +38,79 @@ def freezer_load():
     return p.Series(df['power'].values, index=df.index).dropna()
 
 
+def calculate_LEGP(inverter,
+                   battery,
+                   solar,
+                   panel,
+                   load,
+                   battery_max,
+                   battery_min):
+    '''
+    inputs
+    ------
+    load - series? with date and power at that time
+
+    function takes a timeseries of load and resource and returns the
+    LEGP
+    very similar to run_time_step, but with battery limits and LEGP calc
+    '''
+
+    battery_energy = [battery_max]
+    lca = []
+    lia = []
+    spa = []
+    LEG = []
+
+    for date in load.index:
+        # determine customer and inverter loads and append to arrays
+        load_customer = load[date]
+        load_inverter = inverter.input_power(load_customer)
+        lca.append(load[date])
+        lia.append(load_inverter)
+
+        # determine power produced by panel and append to array
+        solar_power = panel.power(date)
+        spa.append(solar_power)
+
+        # compare inverter load to solar generation
+        # determine how much energy comes from pv and battery
+        if solar_power > load_inverter:
+            charge = solar_power - load_inverter
+            discharge = 0
+        else:
+            charge = 0
+            discharge = load_inverter - solar_power
+
+        # calculate next energy storage state based on energy from battery
+
+        next_battery_energy = (battery_energy[-1]
+                               + charge
+                               - discharge / battery.efficiency(discharge))
+        #print 'nbe', next_battery_energy
+        if next_battery_energy > battery_max:
+            next_battery_energy = battery_max
+        elif next_battery_energy < battery_min:
+            #print 'LEG', battery_min - next_battery_energy
+            LEG.append(battery_min - next_battery_energy)
+            next_battery_energy = battery_min
+        else:
+            LEG.append(0.0)
+
+        battery_energy.append(next_battery_energy)
+
+    # assemble everything into a dataframe
+    d = {'load_customer' : lca,
+         'solar_power' : spa,
+         'load_inverter' : lia,
+         'battery_energy' : battery_energy[:-1]}
+
+    df = p.DataFrame(d)
+    #print LEG
+    #return df
+    LEG = np.array(LEG)
+    LEGP = LEG.sum() / load.sum()
+    return LEGP, df
+
 def run_time_step(inverter,
                   battery,
                   solar,
