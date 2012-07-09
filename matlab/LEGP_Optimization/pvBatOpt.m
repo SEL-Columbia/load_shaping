@@ -1,7 +1,7 @@
 % Mitchell Lee
 % Shared Solar
 % Find mimimum cost battery/PV soluation for a Specified LEGP
-LEGPDesired = 0.01;%linspace(.01,.10,20);
+LEGPDesired = linspace(.01,.20,40);
 best = zeros(length(LEGPDesired),6);
 % call upon SuppDem Sum
 
@@ -14,8 +14,8 @@ for jx = 1:length(LEGPDesired);
     batStep = 100;    % finess by which Batter size may be changed (W-hr)
     pvCost = 0.1762;  % Annual Payment for pv ($/Watt-yr)
     batCost = 0.0804; % Annual Payment for battery capacity ($/W-hr-yr)
-    dates = LuxorNTSData2005(:,1:4);
-    resource = LuxorNTSData2005(:,5);
+    dates = MaliNTSData2005_2(:,1:4);
+    resource = MaliNTSData2005_2(:,5);
 
 
     demand = fridgeDemandYear;

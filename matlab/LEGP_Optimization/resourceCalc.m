@@ -22,6 +22,7 @@ function [I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho)
     
     sigma = (sigma)*pi/180; %collector angle sigma from ground
     L = L*pi/180; %Latitued converted in radians
+    phi_c = phi_c*pi/180;
     
     n = ceil((1:length(time))/24)';
     delta = 23.45*pi/180*sin(2*pi/365*(n-81));
