@@ -1,10 +1,11 @@
+function [ best ] = pvBatOptf(dates, weathVec,demVec,LEGPVec)
 % Mitchell Lee
 % Shared Solar
 % Find mimimum cost battery/PV soluation for a Specified LEGP
-LEGPDesired = linspace(.01,.20,40);
+LEGPDesired = LEGPVec;
 best = zeros(length(LEGPDesired),6);
+dates = [dates,ones(8760,2)];
 % call upon SuppDem Sum
-
 % loop over vector of LEGP values
 % this constructs the cost vs LEGP plot
 for jx = 1:length(LEGPDesired);
@@ -14,13 +15,12 @@ for jx = 1:length(LEGPDesired);
     batStep = 100;    % finess by which Batter size may be changed (W-hr)
     pvCost = 0.1762;  % Annual Payment for pv ($/Watt-yr)
     batCost = 0.0804; % Annual Payment for battery capacity ($/W-hr-yr)
-    dates = MaliNTSData2005_2(:,1:4);
-    resource = MaliNTSData2005_2(:,5);
+    resource = weathVec;
 
 
-    demand = fridgeDemandYear;
+    demand = demVec;
     batMin = 0;
-    batCap = 100*max(fridgeDemandYear);
+    batCap = 100*max(demVec);
     batPerDis = .50;
     % for near infinite battery capacity, decrement PV capacity until
     % desired LEGP is reached
@@ -60,3 +60,7 @@ for jx = 1:length(LEGPDesired);
   % assemble matrix of results
   best(jx,:) = [LEGPDesired(jx),minCost,batMinCost,pvMinCost,pvBatCurve(minRow,:)];
 end
+
+
+end
+
