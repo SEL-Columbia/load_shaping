@@ -9,9 +9,9 @@ weather = [MaliNTSData2005_2(:,5),LuxorNTSData2005(:,5),KisanganiNTSData2005(:,5
 [r,c] = size(weather);
 demVec = fridgeDemandYearSyn;
 LEGPVec = 0.01:0.01:0.20;
-best = zeros(length(LEGPVec),6,c);
+bestMultiLoc = zeros(length(LEGPVec),6,c);
 
 for ixx = 1:c
-    best(:,:,ixx) = pvBatOptf(dates,weather(:,ixx),demVec,LEGPVec);
+    bestMultiLoc(:,:,ixx) = pvBatOptf(dates,weather(:,ixx),demVec,LEGPVec);
 end
     
