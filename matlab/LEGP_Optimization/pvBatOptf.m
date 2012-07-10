@@ -56,7 +56,7 @@ for jx = 1:length(LEGPDesired);
   cost_kW = (pvBatCurve(:,1)*batCost+pvBatCurve(:,2)*pvCost)/kWh_supp;
   [minCost, minRow] = min(cost_kW);
   % assemble matrix of results
-  best(jx,:) = [LEGPDesired(jx),minCost,batMinCost,pvMinCost,pvBatCurve(minRow,:)]
+  best(jx,:) = [LEGPDesired(jx),minCost,batMinCost,pvMinCost,pvBatCurve(minRow,:)];
 end
 
 

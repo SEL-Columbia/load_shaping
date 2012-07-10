@@ -13,7 +13,7 @@ demVec = fridgeDemandYearSyn;
 LEGPVec = 0.01:0.01:0.20;
 bestMultiLoc = zeros(length(LEGPVec),6,c);
 
-for ixx = 1:1%c
+for ixx = 1:c
     bestMultiLoc(:,:,ixx) = pvBatOptf(dates,weather(:,ixx),lats(ixx),demVec,LEGPVec);
 end
     
