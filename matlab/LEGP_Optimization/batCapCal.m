@@ -1,4 +1,4 @@
-function [batCap, LEGP_ach] = batCapCal(dates,resource,demand, pvCap, LEGP, batStep, batMin);
+function [batCap, LEGP_ach] = batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin)
 
 time = datenum(dates);
 pvArea = pvCap/max(resource);
@@ -7,11 +7,8 @@ pvArea = pvCap/max(resource);
 phi_c = 0;
 sigma = 13.45;
 I_B = resource;
-L = 13.45;
-Long = 6.266667;
-LTM = 0;
 rho = 0.2;
-[I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho);
+[I_C] = resourceCalc (dates,sigma,phi_c,I_B,lats,rho);
 
 supply = I_C*pvArea; %W
 batChar = zeros(length(demand),1);

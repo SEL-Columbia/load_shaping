@@ -1,4 +1,4 @@
-function [I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho)
+function [I_C] = resourceCalc (dates,sigma,phi_c,I_B,lats,rho)
     
     % Given a set of dates stamps with the corresponding beam insolation
     % on the earths surface and ground reflectance, calculates
@@ -16,7 +16,7 @@ function [I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho)
     % by Gilbert M. Masters 1st Edition, chapter 7. All additional variables and notation are defined. 
     %
     % Author: Mitchell Lee
-
+    L = lats;
     
     time = datenum(dates); 
     
@@ -28,8 +28,8 @@ function [I_C] = resourceCalc (dates,sigma,phi_c,I_B,L,Long,LTM,rho)
     delta = 23.45*pi/180*sin(2*pi/365*(n-81));
     B = 2*pi/364*(n-81);
     E = (9.87.*sin(2.*B)-7.53.*cos(B)-1.5.*sin(B))/60;
-    time_solar = dates(:,4)+4/60*(LTM-Long)+E;
-    H = 2*pi/24*(12-time_solar);
+    %time_solar = dates(:,4)+4/60*(LTM-Long)+E;
+    H = 2*pi/24*(12-time);
     H_sunrise_col = acos(-tan(L).*tan(delta));
     sunrise_col = H_sunrise_col*24/(2*pi);
     beta = asin(cos(L).*cos(delta).*cos(H)+sin(L).*sin(delta));

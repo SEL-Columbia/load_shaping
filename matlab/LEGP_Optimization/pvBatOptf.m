@@ -1,10 +1,10 @@
-function [ best ] = pvBatOptf(dates, weathVec,demVec,LEGPVec)
+function [ best ] = pvBatOptf(dates, weathVec,lats,demVec,LEGPVec)
 % Mitchell Lee
 % Shared Solar
 % Find mimimum cost battery/PV soluation for a Specified LEGP
 LEGPDesired = LEGPVec;
 best = zeros(length(LEGPDesired),6);
-dates = [dates,ones(8760,2)];
+
 % call upon SuppDem Sum
 % loop over vector of LEGP values
 % this constructs the cost vs LEGP plot
@@ -27,7 +27,7 @@ for jx = 1:length(LEGPDesired);
     pvCap = 20000;
     LEGP = 0;
     while LEGP <= LEGPDesired(jx)
-        [batChar, LOLP, LEGP] = SuppDemSum(dates, resource, demand, pvCap, batCap, batMin);
+        [batChar, LEG, LEGP] = SuppDemSum(dates,lats, resource, demand, pvCap, batCap, batMin);
         if LEGP <= LEGPDesired(jx)
             pvCap = pvCap - pvStep;
         end
@@ -37,11 +37,9 @@ for jx = 1:length(LEGPDesired);
     % isoreliability curve and store in pvBatCurve
     pvBatCurve = zeros(100,2);
     for ix = 1:100
-        [batCap, LEGP_ach] = batCapCal(dates, resource, demand, pvCap, LEGPDesired(jx), batStep, batMin);
+        [batCap, LEGP_ach] = batCapCal(dates, lats, resource, demand, pvCap, LEGPDesired(jx), batStep, batMin);
         pvBatCurve(ix,:) = [batCap, pvCap];
-
         pvCap = pvCap +pvStep;
-
     end
 
     % Correct for depth of discharge of battery
@@ -58,7 +56,7 @@ for jx = 1:length(LEGPDesired);
   cost_kW = (pvBatCurve(:,1)*batCost+pvBatCurve(:,2)*pvCost)/kWh_supp;
   [minCost, minRow] = min(cost_kW);
   % assemble matrix of results
-  best(jx,:) = [LEGPDesired(jx),minCost,batMinCost,pvMinCost,pvBatCurve(minRow,:)];
+  best(jx,:) = [LEGPDesired(jx),minCost,batMinCost,pvMinCost,pvBatCurve(minRow,:)]
 end
 
 

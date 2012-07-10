@@ -4,14 +4,16 @@
 % Script Began on July 9, 2012
 
 
-dates = MaliNTSData2005_2(:,1:4);
-weather = [MaliNTSData2005_2(:,5),LuxorNTSData2005(:,5),KisanganiNTSData2005(:,5),NouakchottNTSData2005(:,5)];
+dates = MaliNTS(:,1:4);
+dates = [dates,ones(8760,2)];
+weather = [MaliNTS(:,5),LuxorNTS(:,5),KisanganiNTS(:,5),NouakchottNTS(:,5)];
 [r,c] = size(weather);
+lats = [13.45,25.68,0.51,18.08];
 demVec = fridgeDemandYearSyn;
 LEGPVec = 0.01:0.01:0.20;
 bestMultiLoc = zeros(length(LEGPVec),6,c);
 
-for ixx = 1:c
-    bestMultiLoc(:,:,ixx) = pvBatOptf(dates,weather(:,ixx),demVec,LEGPVec);
+for ixx = 1:1%c
+    bestMultiLoc(:,:,ixx) = pvBatOptf(dates,weather(:,ixx),lats(ixx),demVec,LEGPVec);
 end
     
