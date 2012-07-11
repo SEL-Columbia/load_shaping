@@ -188,3 +188,46 @@ def batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin):
     LEGP_ach = LEGPTemp                                  
                                       
     return batCap, LEGP_ach
+
+# Main Optimization Algorithm
+# Find mimimum cost battery/PV soluation for a Specified LEGP
+def pvBatoptf(dates, weathVec,lats,demVec, LEGPVec):
+
+    LEGPDesired = LEGPVec
+    best = np.zeros(len(LEGPDesired),6)
+    
+	# call upon SuppDem Sum
+	# loop over vector of LEGP values
+	# this constructs the cost vs LEGP plot
+                                          
+	for jx in range(1,len(LEGPDesired)+1):
+		pvStep = 100     # fineness by which PV size can be changed (Watts)
+		batStep = 100    # finess by which Batter size may be changed (W-hr)
+		pvCost = 0.1762  # Annual Payment for pv ($/Watt-yr)
+		batCost = 0.0804 # Annual Payment for battery capacity ($/W-hr-yr)
+		resource = weathVec
+
+		demand = demVec
+		batMin = 0
+		batCap = 100*max(demVec)
+		batPerDis = .50
+		
+		#for near infinite battery capacity, decrement PV capacity until
+		#desired LEGP is reached
+		pvCap = 20000
+		LEGP = 0
+		while LEGP <= LEGPDesired[jx]:
+			(batChar, LEG, LEGP) = SuppDemSum(dates,lats, resource, demand, pvCap, batCap, batMin)
+			
+			if LEGP <= LEGPDEsired[jx]:
+				pvCap = pvCap - pvStep
+		# starting with PV capacity found in previous loop, trace out an
+		# isoreliability curve and store in pvBatCurve
+		pvBatCurve = np.zeros(100,2);
+			
+			
+		
+    return best
+
+    
+
