@@ -177,7 +177,7 @@ def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
                 LEG[ix+1] = 0
 
         # Calculate LEGP for current iteration
-        LEGPTemp = sum(LEG)/sum(demand)
+        LEGPTemp = LEG.sum() / demand.sum()
 
         # Stop the while loop if program is not converging                              
         if batCap >= 100000:
