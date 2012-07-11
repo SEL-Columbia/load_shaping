@@ -35,7 +35,7 @@ def resourceCalc(date, sigma, phi_c, I_B, lats,rho):
     delta = 23.45 * pi / 180. * sin(2 * pi / 365. * (n - 81))
     B = 2 * pi / 364. * (n - 81)
     E = (9.87 * sin(2 * B) - 7.53 * cos(B) - 1.5 * sin(B)) / 60.
-    time_solar = int(date.strftime('%H')) + 4 / 60 * (LTM-Long) + E
+    time_solar = int(date.strftime('%H'))
     H = 2 * pi / 24 * (12 - time_solar)
     beta = arcsin(cos(L) * cos(delta) * cos(H) + sin(L) * sin(delta))
     phi_s = arcsin(cos(delta) * sin(H) / cos(beta))
@@ -156,12 +156,12 @@ def batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin):
     while LEGPTemp >= LEGP:
 
         # Conduct energy balance for all hours of year
-         for ix in range(1, len(demand)-1):
-              batChar[ix+1] = batChar[ix]+supply[ix]-demand[ix]
-              if batChar[ix+1] > batCap:
-                  batChar[ix+1] = batCap
-              if batChar[ix+1] < batMin:
-                  batChar[ix+1] = batMin
+        for ix in range(1, len(demand)-1):
+            batChar[ix+1] = batChar[ix]+supply[ix]-demand[ix]
+            if batChar[ix+1] > batCap:
+                batChar[ix+1] = batCap
+            if batChar[ix+1] < batMin:
+                batChar[ix+1] = batMin
 
         # Increase battery capacity for next iteration
         batCap = batCap + batStep
@@ -169,7 +169,7 @@ def batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin):
         # Compute the LEG for all hours of year 
         LEG = np.zeros(len(demand))
         for ix in range(1,len(demand)-1):
-            LEG[ix+1] = demand[ix+1]-(supply[ix+1]+batChar[ix]-batMin
+            LEG[ix+1] = demand[ix+1] - (supply[ix+1] + batChar[ix] - batMin)
             if LEG[ix+1] < 0:
                 LEG[ix+1] = 0
 
@@ -196,37 +196,37 @@ def pvBatoptf(dates, weathVec,lats,demVec, LEGPVec):
     LEGPDesired = LEGPVec
     best = np.zeros(len(LEGPDesired),6)
     
-	# call upon SuppDem Sum
-	# loop over vector of LEGP values
-	# this constructs the cost vs LEGP plot
+    # call upon SuppDem Sum
+    # loop over vector of LEGP values
+    # this constructs the cost vs LEGP plot
                                           
-	for jx in range(1,len(LEGPDesired)+1):
-		pvStep = 100     # fineness by which PV size can be changed (Watts)
-		batStep = 100    # finess by which Batter size may be changed (W-hr)
-		pvCost = 0.1762  # Annual Payment for pv ($/Watt-yr)
-		batCost = 0.0804 # Annual Payment for battery capacity ($/W-hr-yr)
-		resource = weathVec
+    for jx in range(1,len(LEGPDesired)+1):
+        pvStep = 100     # fineness by which PV size can be changed (Watts)
+        batStep = 100    # finess by which Batter size may be changed (W-hr)
+        pvCost = 0.1762  # Annual Payment for pv ($/Watt-yr)
+        batCost = 0.0804 # Annual Payment for battery capacity ($/W-hr-yr)
+        resource = weathVec
 
-		demand = demVec
-		batMin = 0
-		batCap = 100*max(demVec)
-		batPerDis = .50
-		
-		#for near infinite battery capacity, decrement PV capacity until
-		#desired LEGP is reached
-		pvCap = 20000
-		LEGP = 0
-		while LEGP <= LEGPDesired[jx]:
-			(batChar, LEG, LEGP) = SuppDemSum(dates,lats, resource, demand, pvCap, batCap, batMin)
-			
-			if LEGP <= LEGPDEsired[jx]:
-				pvCap = pvCap - pvStep
-		# starting with PV capacity found in previous loop, trace out an
-		# isoreliability curve and store in pvBatCurve
-		pvBatCurve = np.zeros(100,2);
-			
-			
-		
+        demand = demVec
+        batMin = 0
+        batCap = 100*max(demVec)
+        batPerDis = .50
+        
+        #for near infinite battery capacity, decrement PV capacity until
+        #desired LEGP is reached
+        pvCap = 20000
+        LEGP = 0
+        while LEGP <= LEGPDesired[jx]:
+            (batChar, LEG, LEGP) = SuppDemSum(dates,lats, resource, demand, pvCap, batCap, batMin)
+            
+            if LEGP <= LEGPDEsired[jx]:
+                pvCap = pvCap - pvStep
+        # starting with PV capacity found in previous loop, trace out an
+        # isoreliability curve and store in pvBatCurve
+        pvBatCurve = np.zeros(100,2);
+            
+            
+        
     return best
 
     
