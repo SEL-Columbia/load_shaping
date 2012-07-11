@@ -131,7 +131,11 @@ def SuppDemSum(dates, lats, resource, demand, pvCap, batCap, batMin):
 
 #function [batCap, LEGP_ach] = batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin)
 
-def batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin):
+def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
+    '''
+    given pvCap and LEGP, returns the battery capacity that delivers
+    that LEGP
+    '''
 
     # scaling pv area to maximum of resource
     pvArea = pvCap/max(resource) 
