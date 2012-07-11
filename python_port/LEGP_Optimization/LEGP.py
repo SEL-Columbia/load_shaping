@@ -148,7 +148,7 @@ def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
     # TODO need loop here to create vector I_C
     I_C = np.zeros(len(demand))
     for i, date in enumerate(dates):
-        I_C[i] = resourceCalc(date,sigma,phi_c,resource[i],lats,rho)
+        I_C[i] = resourceCalc(date, sigma, phi_c, resource[i], lats, rho)
 
     supply = I_C * pvArea 
     batChar = np.zeros(len(demand))
@@ -158,7 +158,6 @@ def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
     x = 0
 
     while LEGPTemp >= LEGP:
-
         # Conduct energy balance for all hours of year
         for ix in range(1, len(demand)-1):
             batChar[ix+1] = batChar[ix]+supply[ix]-demand[ix]
