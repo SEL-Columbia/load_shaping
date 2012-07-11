@@ -21,7 +21,7 @@ mat2 = spio.loadmat('synthDem.mat')
 demand = mat2['lightDemandYearSyn']
 
 # call function
-(batchar, LEG, LEGP) = legp.SuppDemSum(dates, resource, demand, 2000, 10000, 5000)
+(batchar, LEG, LEGP) = legp.SuppDemSum(dates, 13.45, resource, demand, 2000, 10000, 5000)
 
 # create nice plottable object
 batchar = p.Series(index=dates, data=batchar)
