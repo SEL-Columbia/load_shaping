@@ -18,13 +18,18 @@ resource = [w[4] for w in data]
 
 # load up demand data
 mat2 = spio.loadmat('synthDem.mat')
-demand = mat2['lightDemandYearSyn']
+demVec = mat2['lightDemandYearSyn']
+LEGPVec = [0.05]
+lats = 13.45
+weathVec = data[:,4]
+best = legp.pvBatOptf(dates, weathVec,lats,demVec, LEGPVec)
 
-batcap, desired = legp.batCapCal(dates, 13.45, resource, demand, 2000, 0.05, 100,
+'''
+batcap, desired = legp.batCapCal(dates, 13.45, resource, demVec, 2000, 0.05, 100,
 100)
 print 'battery', batcap
 print 'LEGP', desired
-
+'''
 
 '''
 # call function

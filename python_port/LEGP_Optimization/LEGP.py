@@ -178,7 +178,7 @@ def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
 
         # Calculate LEGP for current iteration
         LEGPTemp = LEG.sum() / demand.sum()
-
+        print LEGPTemp
         # Stop the while loop if program is not converging                              
         if batCap >= 100000:
             LEGP_ach = -999
@@ -192,12 +192,12 @@ def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
                                       
     return batCap, LEGP_ach
 
-# Main Optimization Algorithm
-# Find mimimum cost battery/PV soluation for a Specified LEGP
-def pvBatoptf(dates, weathVec,lats,demVec, LEGPVec):
+    # Main Optimization Algorithm
+    # Find mimimum cost battery/PV soluation for a Specified LEGP
+def pvBatOptf(dates, weathVec,lats,demVec, LEGPVec):
 
     LEGPDesired = LEGPVec
-    best = np.zeros(len(LEGPDesired),6)
+    best = np.zeros((len(LEGPDesired),6))
     
     # call upon SuppDem Sum
     # loop over vector of LEGP values
@@ -219,16 +219,39 @@ def pvBatoptf(dates, weathVec,lats,demVec, LEGPVec):
         #desired LEGP is reached
         pvCap = 20000
         LEGP = 0
-        while LEGP <= LEGPDesired[jx]:
+        while LEGP <= LEGPDesired[jx-1]:
             (batChar, LEG, LEGP) = SuppDemSum(dates,lats, resource, demand, pvCap, batCap, batMin)
             
-            if LEGP <= LEGPDEsired[jx]:
+            if LEGP <= LEGPDesired[jx-1]:
                 pvCap = pvCap - pvStep
+        
         # starting with PV capacity found in previous loop, trace out an
         # isoreliability curve and store in pvBatCurve
-        pvBatCurve = np.zeros(100,2);
-            
-            
+        pvBatCurve = np.zeros((100,2))
+        for ix in np.arange(1,101):
+            (batCap, LEGP_ach) = batCapCal(dates, lats, resource, demand, pvCap, LEGPDesired[jx-1], batStep, batMin)
+            pvBatCurve[ix-1,:] = np.hstack([batCap, pvCap])
+            pvCap = pvCap +pvStep
+        
+     
+        
+        # Correct for depth of discharge of battery
+        pvBatCurve[:,0] = pvBatCurve[:,0] / batPerDis; 
+        # determine Yearly Payment Cost from isoreliability curve and find
+        # minimum
+        totCost = pvBatCurve[:,0] * batCost + pvBatCurve[:,1] * pvCost
+        [minCost, minRow] = totCost.min()
+        batMinCost = pvBatCurve[minRow,0] * batCost
+        pvMinCost = pvBatCurve[minRow,1] * pvCost
+        
+        #Cost Per kWh based on Yearly Payment Cost
+        kWh_supp = demand.sum()*(1-LEGP_ach)/1000        
+        cost_kW = (pvBatCurve[:,0]*batCost+pvBatCurve[:,1]*pvCost)/kWh_supp
+        minCost = cost_kW.min()
+        minRow = cost_kW.argmin()
+        
+        # assemble matrix of results
+        best[jx-1,:] = np.concatenate(conLEGPDesired[jx-1],minCost,batMinCost,pvMinCost,pvBatCurve[minRow,:])
         
     return best
 
