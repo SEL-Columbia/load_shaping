@@ -20,6 +20,13 @@ resource = [w[4] for w in data]
 mat2 = spio.loadmat('synthDem.mat')
 demand = mat2['lightDemandYearSyn']
 
+batcap, desired = legp.batCapCal(dates, 13.45, resource, demand, 2000, 0.05, 100,
+100)
+print 'battery', batcap
+print 'LEGP', desired
+
+
+'''
 # call function
 (batchar, LEG, LEGP) = legp.SuppDemSum(dates, 13.45, resource, demand, 2000, 10000, 5000)
 
@@ -27,6 +34,6 @@ demand = mat2['lightDemandYearSyn']
 batchar = p.Series(index=dates, data=batchar)
 batchar.plot()
 plt.show()
-
+'''
 
 
