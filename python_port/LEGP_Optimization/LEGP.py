@@ -10,7 +10,7 @@ import numpy as np
 # solar database and converts it to insolation on a fixed panel
 # accounting for both direct, ground reflected, and diffuse 
 
-def resourceCalc(date, sigma, phi_c, I_B, L, Long, LTM, rho):
+def resourceCalc(date, sigma, phi_c, I_B, lats,rho):
     '''
     inputs
     ------
@@ -23,6 +23,7 @@ def resourceCalc(date, sigma, phi_c, I_B, L, Long, LTM, rho):
     
     #sigma = (sigma)*pi/180  #collector angle sigma from ground
     sigma = sp.radians(sigma)
+    L = lats
     L = sp.radians(L)
     phi_c = sp.radians(phi_c)
 
@@ -78,7 +79,7 @@ end
 #function [batChar, LEG, LEGP] = SuppDemSum (dates,resource,demand, pvCap, batCap, batMin)
 
 
-def SuppDemSum(dates, resource, demand, pvCap, batCap, batMin):
+def SuppDemSum(dates, lats, resource, demand, pvCap, batCap, batMin):
 
     # Using energy method calculates battery charge state over a given
     # time frame. The inputs are a date matrix (dates), the annual
@@ -95,16 +96,13 @@ def SuppDemSum(dates, resource, demand, pvCap, batCap, batMin):
 
     # Subfunction inputs
     phi_c = 0
-    sigma = 13.45
-    L = 13.45
-    Long = 6.266667
-    LTM = 0
+    sigma = lats
     rho = 0.2
 
     # TODO need loop here to create vector I_C
     I_C = np.zeros(len(demand))
     for i, date in enumerate(dates):
-        I_C[i] = resourceCalc(date,sigma,phi_c,resource[i],L,Long,LTM,rho)
+        I_C[i] = resourceCalc(date,sigma,phi_c,resource[i],lats,rho)
 
     supply = I_C * pvArea 
     batChar = np.zeros(len(demand))
@@ -129,3 +127,64 @@ def SuppDemSum(dates, resource, demand, pvCap, batCap, batMin):
     # hold on
     # plot(batChar)
     return batChar, LEG, LEGP
+
+
+#function [batCap, LEGP_ach] = batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin)
+
+def batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin):
+
+    # scaling pv area to maximum of resource
+    pvArea = pvCap/max(resource) 
+
+    # Subfunction inputs
+    phi_c = 0
+    sigma = lats
+    rho = 0.2
+
+    # TODO need loop here to create vector I_C
+    I_C = np.zeros(len(demand))
+    for i, date in enumerate(dates):
+        I_C[i] = resourceCalc(date,sigma,phi_c,resource[i],lats,rho)
+
+    supply = I_C * pvArea 
+    batChar = np.zeros(len(demand))
+
+    LEGPTemp = 1
+    batCap = 0
+    x = 0
+
+    while LEGPTemp >= LEGP:
+
+        # Conduct energy balance for all hours of year
+         for ix in range(1, len(demand)-1):
+              batChar[ix+1] = batChar[ix]+supply[ix]-demand[ix]
+              if batChar[ix+1] > batCap:
+                  batChar[ix+1] = batCap
+              if batChar[ix+1] < batMin:
+                  batChar[ix+1] = batMin
+
+        # Increase battery capacity for next iteration
+        batCap = batCap + batStep
+
+        # Compute the LEG for all hours of year 
+        LEG = np.zeros(len(demand))
+        for ix in range(1,len(demand)-1):
+            LEG[ix+1] = demand[ix+1]-(supply[ix+1]+batChar[ix]-batMin
+            if LEG[ix+1] < 0:
+                LEG[ix+1] = 0
+
+        # Calculate LEGP for current iteration
+        LEGPTemp = sum(LEG)/sum(demand)
+
+        # Stop the while loop if program is not converging                              
+        if batCap >= 100000:
+            LEGP_ach = -999
+            x = 1
+            break
+                                      
+    # Correct for over counting batCap
+    batCap = batCap - 100
+    # Store the LEGP of the final iteration                                  
+    LEGP_ach = LEGPTemp                                  
+                                      
+    return batCap, LEGP_ach
