@@ -34,19 +34,19 @@ def resourceCalc(date, sigma, phi_c, I_B, lats,rho):
 
 
     delta = 23.45 * pi / 180. * sin(2 * pi / 365. * (n - 81))
-    time_solar = int(date.strftime('%H'))
+    time_solar = int(date.strftime('%H'))+1
     H = 2 * pi / 24 * (12 - time_solar)
     
     beta = arcsin(cos(L) * cos(delta) * cos(H) + sin(L) * sin(delta))
     phi_s = arcsin(cos(delta) * sin(H) / cos(beta))
     
     # C ambient light correction
-    C = 0.095 + 0.04 * sin(360 / 365 * (n - 100))
+    C = 0.095 + 0.04 * sin(360 / 365. * (n - 100))
     # Stationary Collector
 
     I_C = I_B * (cos(beta) * cos(phi_s - phi_c) * sin(sigma)
                  + sin(beta) * cos(sigma)
-                 + C * (1+cos(sigma)) / 2 + rho * (sin(beta)+C) * (1-cos(sigma))/2)
+                 + C * (1+cos(sigma)) / 2. + rho * (sin(beta)+C) * (1-cos(sigma))/2.)
     if I_C < 0:
         I_C = 0
 

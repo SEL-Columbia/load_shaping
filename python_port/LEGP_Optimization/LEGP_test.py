@@ -37,22 +37,23 @@ mat = scipy.io.loadmat('IcTest.mat')
 IcTest = mat['IcTest']
 IcTest = IcTest[:,0]
 
-
+'''
 # call function
 (batchar, LEG, LEGP) = legp.SuppDemSum(dates, 13.45, IcTest, demVec, 2000, 10000, 5000)
 
 # create nice plottable object
+'''
 '''
 batchar = p.Series(index=dates, data=batchar)
 batchar.plot()
 plt.show()
 '''
 
-'''
+
 sigma = lats
 phi_c = 0
 rho = 0.2
 I_C = np.zeros(len(weathVec)) 
 for i, date in enumerate(dates):
     I_C[i] = legp.resourceCalc(date, sigma, phi_c, weathVec[i], lats,rho)
-'''
+
