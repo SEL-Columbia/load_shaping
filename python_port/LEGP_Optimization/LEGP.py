@@ -1,6 +1,7 @@
 from numpy import pi, sin, cos, tan, arccos, arcsin
 import scipy as sp
 import numpy as np
+import matplotlib.pyplot as plt
 
 # dates is an array 8760 x 6 columns 
 
@@ -33,22 +34,21 @@ def resourceCalc(date, sigma, phi_c, I_B, lats,rho):
 
 
     delta = 23.45 * pi / 180. * sin(2 * pi / 365. * (n - 81))
-    B = 2 * pi / 364. * (n - 81)
-    E = (9.87 * sin(2 * B) - 7.53 * cos(B) - 1.5 * sin(B)) / 60.
     time_solar = int(date.strftime('%H'))
     H = 2 * pi / 24 * (12 - time_solar)
+    
     beta = arcsin(cos(L) * cos(delta) * cos(H) + sin(L) * sin(delta))
     phi_s = arcsin(cos(delta) * sin(H) / cos(beta))
-    theta = arccos(cos(beta) * cos(phi_s - phi_c) * sin(sigma) + sin(beta) * cos(sigma))
     
     # C ambient light correction
     C = 0.095 + 0.04 * sin(360 / 365 * (n - 100))
     # Stationary Collector
+
     I_C = I_B * (cos(beta) * cos(phi_s - phi_c) * sin(sigma)
                  + sin(beta) * cos(sigma)
                  + C * (1+cos(sigma)) / 2 + rho * (sin(beta)+C) * (1-cos(sigma))/2)
     if I_C < 0:
-        IC = 0
+        I_C = 0
 
     return I_C
     
@@ -178,7 +178,7 @@ def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
 
         # Calculate LEGP for current iteration
         LEGPTemp = LEG.sum() / demand.sum()
-        print LEGPTemp
+
         # Stop the while loop if program is not converging                              
         if batCap >= 100000:
             LEGP_ach = -999
