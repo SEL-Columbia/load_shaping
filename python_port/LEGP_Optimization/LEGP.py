@@ -90,11 +90,11 @@ def SuppDemSum(dates, lats, I_C, demand, pvCap, batCap, batMin):
     #[r,c] = size(dates)
     #dates = [dates,ones(r,2)]
     #time = datenum(dates)
-    
-    # scaling pv area to maximum of resource
-    pvArea = pvCap/max(I_C) 
+    supply = I_C/1000. * pvCap
+    print np.max(supply)
+    batChar = np.zeros(len(demand))
 
-    supply = I_C * pvArea 
+   
     batChar = np.zeros(len(demand))
     batChar[0] = batMin
     #for ix = 1:(length(demand)-1)
@@ -242,7 +242,7 @@ def pvBatOptf(dates, weathVec,lats,demVec, LEGPVec):
         #Cost Per kWh based on Yearly Payment Cost
         kWh_supp = demand.sum()*(1-LEGP_ach)/1000.        
         cost_kW = (pvBatCurve[:,0]*batCost+pvBatCurve[:,1]*pvCost)/kWh_supp
-        print cost_kW
+        #print cost_kW
         minCost = cost_kW.min()
         minRow = cost_kW.argmin()
         #print pvBatCurve
