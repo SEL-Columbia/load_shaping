@@ -79,7 +79,7 @@ end
 #function [batChar, LEG, LEGP] = SuppDemSum (dates,resource,demand, pvCap, batCap, batMin)
 
 
-def SuppDemSum(dates, lats, resource, demand, pvCap, batCap, batMin):
+def SuppDemSum(dates, lats, I_C, demand, pvCap, batCap, batMin):
 
     # Using energy method calculates battery charge state over a given
     # time frame. The inputs are a date matrix (dates), the annual
@@ -92,21 +92,11 @@ def SuppDemSum(dates, lats, resource, demand, pvCap, batCap, batMin):
     #time = datenum(dates)
     
     # scaling pv area to maximum of resource
-    pvArea = pvCap/max(resource) 
-
-    # Subfunction inputs
-    phi_c = 0
-    sigma = lats
-    rho = 0.2
-
-    # TODO need loop here to create vector I_C
-    I_C = np.zeros(len(demand))
-    for i, date in enumerate(dates):
-        I_C[i] = resourceCalc(date,sigma,phi_c,resource[i],lats,rho)
+    pvArea = pvCap/max(I_C) 
 
     supply = I_C * pvArea 
     batChar = np.zeros(len(demand))
-
+    batChar[0] = batMin
     #for ix = 1:(length(demand)-1)
     for ix in range(1, len(demand)-1):
         batChar[ix+1] = batChar[ix]+supply[ix]-demand[ix]
@@ -120,7 +110,7 @@ def SuppDemSum(dates, lats, resource, demand, pvCap, batCap, batMin):
     for ix in range(1, len(demand)-1):
         LEG[ix+1] = demand[ix+1]-(supply[ix+1]+batChar[ix]-batMin)
         if LEG[ix+1] < 0:
-            LEG[ix+1] = 0
+            LEG[ix+1] = 0.
 
     LEGP = LEG.sum() / demand.sum()
     #LOLP = length(find(LEG>0))/length(LEG)
@@ -131,28 +121,16 @@ def SuppDemSum(dates, lats, resource, demand, pvCap, batCap, batMin):
 
 #function [batCap, LEGP_ach] = batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin)
 
-def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
+def batCapCal(dates, lats, I_C, demand, pvCap, LEGP, batStep, batMin):
     '''
     given pvCap and LEGP, returns the battery capacity that delivers
     that LEGP
     '''
 
     # scaling pv area to maximum of resource
-    pvArea = pvCap/max(resource) 
-
-    # Subfunction inputs
-    phi_c = 0
-    sigma = lats
-    rho = 0.2
-
-    # TODO need loop here to create vector I_C
-    I_C = np.zeros(len(demand))
-    for i, date in enumerate(dates):
-        I_C[i] = resourceCalc(date, sigma, phi_c, resource[i], lats, rho)
-
-    supply = I_C * pvArea 
+    supply = I_C/1000. * pvCap
+    print np.max(supply)
     batChar = np.zeros(len(demand))
-
     LEGPTemp = 1
     batCap = 0
     x = 0
@@ -168,25 +146,26 @@ def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
 
         # Increase battery capacity for next iteration
         batCap = batCap + batStep
-
+        
+        
         # Compute the LEG for all hours of year 
         LEG = np.zeros(len(demand))
-        for ix in range(1,len(demand)-1):
+        for ix in range(1,len(demand)-1):   
             LEG[ix+1] = demand[ix+1] - (supply[ix+1] + batChar[ix] - batMin)
             if LEG[ix+1] < 0:
                 LEG[ix+1] = 0
-
+                
         # Calculate LEGP for current iteration
         LEGPTemp = LEG.sum() / demand.sum()
-
+        #print LEGPTemp, batCap
         # Stop the while loop if program is not converging                              
-        if batCap >= 100000:
-            LEGP_ach = -999
+        if batCap >= 100000.:
+            LEGP_ach = -999.
             x = 1
             break
                                       
     # Correct for over counting batCap
-    batCap = batCap - 100
+    batCap = batCap - batStep
     # Store the LEGP of the final iteration                                  
     LEGP_ach = LEGPTemp                                  
                                       
@@ -195,7 +174,19 @@ def batCapCal(dates, lats, resource, demand, pvCap, LEGP, batStep, batMin):
     # Main Optimization Algorithm
     # Find mimimum cost battery/PV soluation for a Specified LEGP
 def pvBatOptf(dates, weathVec,lats,demVec, LEGPVec):
-
+    
+    # Subfunction resourceCalc inputs
+    I_B = weathVec
+    phi_c = 0.
+    sigma = lats
+    rho = 0.2
+    demand = demVec
+    
+    # Loop here to create vector I_C
+    I_C = np.zeros(len(demand))
+    for i, date in enumerate(dates):
+        I_C[i] = resourceCalc(date,sigma,phi_c,I_B[i],lats,rho)
+        
     LEGPDesired = LEGPVec
     best = np.zeros((len(LEGPDesired),6))
     
@@ -204,11 +195,10 @@ def pvBatOptf(dates, weathVec,lats,demVec, LEGPVec):
     # this constructs the cost vs LEGP plot
                                           
     for jx in range(1,len(LEGPDesired)+1):
-        pvStep = 100     # fineness by which PV size can be changed (Watts)
-        batStep = 100    # finess by which Batter size may be changed (W-hr)
+        pvStep = 100.     # fineness by which PV size can be changed (Watts)
+        batStep = 100.    # finess by which Batter size may be changed (W-hr)
         pvCost = 0.1762  # Annual Payment for pv ($/Watt-yr)
         batCost = 0.0804 # Annual Payment for battery capacity ($/W-hr-yr)
-        resource = weathVec
 
         demand = demVec
         batMin = 0
@@ -217,43 +207,49 @@ def pvBatOptf(dates, weathVec,lats,demVec, LEGPVec):
         
         #for near infinite battery capacity, decrement PV capacity until
         #desired LEGP is reached
-        pvCap = 20000
-        LEGP = 0
+        pvCap = 20000.
+        LEGP = 0.
         while LEGP <= LEGPDesired[jx-1]:
-            (batChar, LEG, LEGP) = SuppDemSum(dates,lats, resource, demand, pvCap, batCap, batMin)
+            (batChar, LEG, LEGP) = SuppDemSum(dates,lats, I_C, demand, pvCap, batCap, batMin)
             
             if LEGP <= LEGPDesired[jx-1]:
                 pvCap = pvCap - pvStep
-        
+        pvCap = pvCap + pvStep
         # starting with PV capacity found in previous loop, trace out an
         # isoreliability curve and store in pvBatCurve
         pvBatCurve = np.zeros((100,2))
+        #print 'entering scary loop'
         for ix in np.arange(1,101):
-            (batCap, LEGP_ach) = batCapCal(dates, lats, resource, demand, pvCap, LEGPDesired[jx-1], batStep, batMin)
+            (batCap, LEGP_ach) = batCapCal(dates, lats, I_C, demand, pvCap, LEGPDesired[jx-1], batStep, batMin)
             pvBatCurve[ix-1,:] = np.hstack([batCap, pvCap])
+            #print batCap
+            print LEGP_ach
             pvCap = pvCap +pvStep
         
-     
+        print 'this is the bat curve', pvBatCurve
         
         # Correct for depth of discharge of battery
         pvBatCurve[:,0] = pvBatCurve[:,0] / batPerDis; 
         # determine Yearly Payment Cost from isoreliability curve and find
         # minimum
+        
         totCost = pvBatCurve[:,0] * batCost + pvBatCurve[:,1] * pvCost
-        [minCost, minRow] = totCost.min()
+        minCost = totCost.min()
+        minRow = totCost.argmin()
         batMinCost = pvBatCurve[minRow,0] * batCost
         pvMinCost = pvBatCurve[minRow,1] * pvCost
         
         #Cost Per kWh based on Yearly Payment Cost
-        kWh_supp = demand.sum()*(1-LEGP_ach)/1000        
+        kWh_supp = demand.sum()*(1-LEGP_ach)/1000.        
         cost_kW = (pvBatCurve[:,0]*batCost+pvBatCurve[:,1]*pvCost)/kWh_supp
+        print cost_kW
         minCost = cost_kW.min()
         minRow = cost_kW.argmin()
+        #print pvBatCurve
         
         # assemble matrix of results
-        best[jx-1,:] = np.concatenate(conLEGPDesired[jx-1],minCost,batMinCost,pvMinCost,pvBatCurve[minRow,:])
+        best[jx-1,:] = np.concatenate(([LEGPDesired[jx-1]],[minCost],[batMinCost],[pvMinCost],pvBatCurve[minRow,:]))
         
     return best
 
     
-
