@@ -26,15 +26,15 @@ function [I_C] = resourceCalc (dates,sigma,phi_c,I_B,lats,rho)
     
     n = ceil((1:length(time))/24)';
     delta = 23.45*pi/180*sin(2*pi/365*(n-81));
-    B = 2*pi/364*(n-81);
-    E = (9.87.*sin(2.*B)-7.53.*cos(B)-1.5.*sin(B))/60;
+    %B = 2*pi/364*(n-81);
+    %E = (9.87.*sin(2.*B)-7.53.*cos(B)-1.5.*sin(B))/60;
     %time_solar = dates(:,4)+4/60*(LTM-Long)+E;
     H = 2*pi/24*(12-dates(:,4));
-    H_sunrise_col = acos(-tan(L).*tan(delta));
-    sunrise_col = H_sunrise_col*24/(2*pi);
+    %H_sunrise_col = acos(-tan(L).*tan(delta));
+    %sunrise_col = H_sunrise_col*24/(2*pi);
     beta = asin(cos(L).*cos(delta).*cos(H)+sin(L).*sin(delta));
     phi_s = asin(cos(delta).*sin(H)./cos(beta));
-    theta = acos(cos(beta).*cos(phi_s-phi_c).*sin(sigma)+sin(beta).*cos(sigma));
+    %theta = acos(cos(beta).*cos(phi_s-phi_c).*sin(sigma)+sin(beta).*cos(sigma));
     
     C = 0.095+0.04*sin(360/365*(n-100));
     % Stationary Collector

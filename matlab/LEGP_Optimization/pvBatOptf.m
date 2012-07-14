@@ -1,4 +1,4 @@
-function [ best ] = pvBatOptf(dates, weathVec,lats,demVec,LEGPVec)
+function [ best ] = pvBatOptf(dates, I_C,demVec,LEGPVec)
 % Mitchell Lee
 % Shared Solar
 % Find mimimum cost battery/PV soluation for a Specified LEGP
@@ -15,7 +15,6 @@ for jx = 1:length(LEGPDesired);
     batStep = 100;    % finess by which Batter size may be changed (W-hr)
     pvCost = 0.1762;  % Annual Payment for pv ($/Watt-yr)
     batCost = 0.0804; % Annual Payment for battery capacity ($/W-hr-yr)
-    resource = weathVec;
 
 
     demand = demVec;
@@ -27,17 +26,17 @@ for jx = 1:length(LEGPDesired);
     pvCap = 20000;
     LEGP = 0;
     while LEGP <= LEGPDesired(jx)
-        [batChar, LEG, LEGP] = SuppDemSum(dates,lats, resource, demand, pvCap, batCap, batMin);
+        [batChar, LEG, LEGP] = SuppDemSum(I_C, demand, pvCap, batCap, batMin);
         if LEGP <= LEGPDesired(jx)
             pvCap = pvCap - pvStep;
         end
     end
-    
+        pvCap = pvCap - pvStep;
     % starting with PV capacity found in previous loop, trace out an
     % isoreliability curve and store in pvBatCurve
     pvBatCurve = zeros(100,2);
     for ix = 1:100
-        [batCap, LEGP_ach] = batCapCal(dates, lats, resource, demand, pvCap, LEGPDesired(jx), batStep, batMin);
+        [batCap, LEGP_ach] = batCapCal(I_C, demand, pvCap, LEGPDesired(jx), batStep, batMin);
         pvBatCurve(ix,:) = [batCap, pvCap];
         pvCap = pvCap +pvStep;
     end

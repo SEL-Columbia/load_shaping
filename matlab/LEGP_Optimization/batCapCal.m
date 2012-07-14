@@ -1,20 +1,9 @@
-function [batCap, LEGP_ach] = batCapCal(dates,lats, resource,demand, pvCap, LEGP, batStep, batMin)
+function [batCap, LEGP_ach] = batCapCal( I_C,demand, pvCap, LEGP, batStep, batMin)
 
-time = datenum(dates);
-pvArea = pvCap/max(resource);
-
-% Subfunction inputs
-phi_c = 0;
-sigma = lats;
-I_B = resource;
-rho = 0.2;
-[I_C] = resourceCalc (dates,sigma,phi_c,I_B,lats,rho);
-
-supply = I_C*pvArea; %W
+supply = I_C/1000*pvCap;%W
 batChar = zeros(length(demand),1);
 LEGPTemp = 1;
 batCap = 0;
-
 x = 0;
 
 while LEGPTemp >= LEGP
