@@ -7,10 +7,6 @@ function [batChar, LEG, LEGP] = SuppDemSum (dates,lats, resource,demand, pvCap, 
 % dates(1,:) = [2005, 1, 1, 1]  %[year, month,day,hour]
 % Author: Mitchell Lee
 
-% [r,c] = size(dates);
-% time = datenum(dates);
-pvArea = pvCap/max(resource); 
-
 % Subfunction inputs
 phi_c = 0;
 sigma = lats;
@@ -19,16 +15,7 @@ I_B = resource;
 rho = 0.2;
 [I_C] = resourceCalc (dates,sigma,phi_c,I_B,lats,rho);
 
-%To create daily data;
-% I_CDaily = ones(365,1)*-999;
-% for ix = 1:365
-%     day = I_C((24*ix-23):(ix*24));
-%     I_CDaily(ix) = sum(day);
-% end
-% I_C = I_CDaily;
-% plot(I_C)
-
-supply = I_C*pvArea; %W
+supply = I_C./1000*pvCap; %W
 batChar = zeros(length(demand),1);
 
 for ix = 1:(length(demand)-1);
