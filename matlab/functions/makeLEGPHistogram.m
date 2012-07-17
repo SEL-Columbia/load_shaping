@@ -36,7 +36,7 @@ for ix = 1:length(LEGPVec)                              %SuppDemSum (I_C,demand,
     [batChar1, LEG1(:,ix),LEGP1(ix)] = SuppDemSum(I_C,demVec,bestMultiLoc(ix,6),bestMultiLoc(ix,5),bestMultiLoc(ix,5)/2);
 end
    
-%Separate Out LEGP by month
+%Separate Out LEGP by Hour
 LEGPHourly = zeros(24,length(LEGPVec));
 LEGHourly = zeros(24,length(LEGPVec));
 
@@ -57,4 +57,29 @@ set(ax(1),'FontSize',16)
 set(ax(2),'FontSize',16)
 set(h2,'LineWidth',2,'LineStyle','--')
 legend('Hourly LEGP for Yearly LEGP = 0.01','Hourly LEGP for Yearly LEGP = 0.05', 'Average Hourly Energy Demand')
+
+%Separate Out LEGP by Month
+LEGPMonthly = zeros(12,length(LEGPVec));
+LEGMonthly = zeros(12,length(LEGPVec));
+
+for ix = 1:length(LEGPVec)
+    for jx = 1:12
+        LEGMonthly(jx,ix) = sum(LEG1(:,ix).*(dates(:,3)==jx));
+        LEGPMonthly(jx,ix) = LEGMonthly(jx,ix)./sum(demVec.*(dates(:,3)==jx));
+    end
+end
+
+I_monthly = makeMonthlyRad(dates, I_C);
+
+figure
+[Ax, H1, H2] = plotyy(1:12,LEGPMonthly,1:12,I_monthly,@bar,@line);
+xlabel('Month','FontSize',18)
+set(get(ax(1),'Ylabel'),'String','Monthly LEGP','FontSize',16)
+set(get(ax(2),'Ylabel'),'String','Monthly Insolation on Collector (Whr/m^2)','FontSize',16)%\
+colormap hot
+set(Ax(1),'FontSize',16)
+set(Ax(2),'FontSize',16)
+set(H2,'LineWidth',2,'LineStyle','--')
+legend('Monthly LEGP for Yearly LEGP = 0.01','Monthly LEGP for Yearly LEGP = 0.05', 'Insolation on Collector (Whr/m^2)')%\
+
 
