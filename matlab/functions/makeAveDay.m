@@ -11,7 +11,5 @@ for ix = 1:24
     aveDays(ix) = mean(demVec(ix:24:144+ix));
 end
 
-
-
 end
 
