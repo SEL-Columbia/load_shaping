@@ -3,12 +3,13 @@
 % Script Began on 07162012
 % Hourly LEGP Histogram Maker
 format compact; format long g
+close all
 addpath('C:\Users\Mitchell\Documents\Shared Solar\load_shaping\matlab\LEGP_Optimization')
 addpath('C:\Users\Mitchell\Documents\Shared Solar\load_shaping\matlab\Data') 
 
 dates = MaliNTS(:,1:4);
 dates = [dates,ones(8760,2)];
-weather = MaliNTS(:,5);%,LuxorNTS(:,5),KisanganiNTS(:,5),NouakchottNTS(:,5)];
+weather = MaliNTS(:,5);%,LuxorNTS(:,5),KisanganiNTS(:,5),NouakchottNTS(:,5)];LEGPMonthly
 [r,c] = size(weather);
 lats = 13.45;%25.68,0.51,18.08];
 demVec = fridgeDemandYear;
@@ -25,15 +26,15 @@ for ixx = 1:1%c
     bestMultiLoc(:,:,ixx) = pvBatOptf(dates,I_C,demVec,LEGPVec);
 end
    
-batChar1 = zeros(length(I_C),1);
-LEG1 = zeros(length(I_C),1);
+batChar1 = zeros(length(I_C),length(LEGPVec));
+LEG1 = zeros(length(I_C),length(LEGPVec));
 LEGP1 = zeros(length(LEGPVec),1);
 % Energy Balance Algorithm for each LEGP, so that the LEP of each
 % hour is known
 
 
 for ix = 1:length(LEGPVec)                              %SuppDemSum (I_C,demand, pvCap, batCap, batMin)
-    [batChar1, LEG1(:,ix),LEGP1(ix)] = SuppDemSum(I_C,demVec,bestMultiLoc(ix,6),bestMultiLoc(ix,5),bestMultiLoc(ix,5)/2);
+    [batChar1(:,ix), LEG1(:,ix),LEGP1(ix)] = SuppDemSum(I_C,demVec,bestMultiLoc(ix,6),bestMultiLoc(ix,5),bestMultiLoc(ix,5)/2);
 end
    
 %Separate Out LEGP by Hour
@@ -73,12 +74,12 @@ I_monthly = makeMonthlyRad(dates, I_C);
 
 figure
 [Ax, H1, H2] = plotyy(1:12,LEGPMonthly,1:12,I_monthly,@bar,@line);
-xlabel('Month','FontSize',18)
-set(get(ax(1),'Ylabel'),'String','Monthly LEGP','FontSize',16)
-set(get(ax(2),'Ylabel'),'String','Monthly Insolation on Collector (Whr/m^2)','FontSize',16)%\
+xlabel('Month','FontSize',14)
+set(get(Ax(1),'Ylabel'),'String','Monthly LEGP','FontSize',14)
+set(get(Ax(2),'Ylabel'),'String','Monthly Insolation on Collector (Whr/m^2)','FontSize',14)%\
 colormap hot
-set(Ax(1),'FontSize',16)
-set(Ax(2),'FontSize',16)
+set(Ax(1),'FontSize',14)
+set(Ax(2),'FontSize',14)
 set(H2,'LineWidth',2,'LineStyle','--')
 legend('Monthly LEGP for Yearly LEGP = 0.01','Monthly LEGP for Yearly LEGP = 0.05', 'Insolation on Collector (Whr/m^2)')%\
 
