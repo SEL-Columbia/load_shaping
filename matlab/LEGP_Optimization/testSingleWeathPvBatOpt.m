@@ -1,6 +1,6 @@
 % Mitchell Lee
 % Shared Solar 
-% Call on pvBatOptf for four different weather profiles
+% Call on pvBatOptf for ones weather profile
 % Script Began on July 9, 2012
 
 dates = MaliNTS(:,1:4);
@@ -20,9 +20,9 @@ bestSingleLoc = pvBatOptf(dates,I_C,demVec,LEGPVec);
 %% Plot for ONE Cost vs LEGP Curve
 plot(bestSingleLoc(:,1),bestSingleLoc(:,2),'LineWidth',2)
 
-xlabel('LEGP','FontSize',18)
-ylabel('Cost Per kWhr (USD)','FontSize',18)
-legend('Mali')
+xlabel('LEGP','FontSize',14)
+ylabel('Cost Per kWhr (USD)','FontSize',14)
+%legend('Mali')
 set(gca,'FontSize',12)
 axis tight
 hold off
