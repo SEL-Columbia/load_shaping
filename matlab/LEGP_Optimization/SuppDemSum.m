@@ -26,7 +26,7 @@ end
 LEG = zeros(length(demand),1);
 for ix = 1:(length(demand)-1);
     LEG(ix+1) = demand(ix+1)-(supply(ix+1)+batChar(ix)-batMin);
-    if LEG(ix+1) <0
+    if (LEG(ix+1) <0) || (ix<=24)
         LEG(ix+1) = 0;
     end
 end
