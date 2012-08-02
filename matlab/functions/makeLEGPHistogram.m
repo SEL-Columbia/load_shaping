@@ -67,37 +67,17 @@ set(h2,'LineWidth',2,'LineStyle','--')
 legend('Hourly LEGP for Yearly LEGP = 0.01','Hourly LEGP for Yearly LEGP = 0.05', 'Average Hourly Energy Demand')
 h_legend=legend;
 set(h_legend,'FontSize',10);
-%% Separate Out LEGP by Month
-% LEGPMonthly = zeros(12,length(LEGPVec));
-% LEGMonthly = zeros(12,length(LEGPVec));
-% 
-% for ix = 1:length(LEGPVec)
-%     for jx = 1:12
-%         LEGMonthly(jx,ix) = sum(LEG1(:,ix).*(dates(:,3)==jx));
-%         LEGPMonthly(jx,ix) = LEGMonthly(jx,ix)./sum(demVec.*(dates(:,3)==jx));
-%     end
-% end
-% 
-% I_monthly = makeMonthlyRad(dates, I_C);
-% 
-% figure
-% [Ax, H1, H2] = plotyy(1:12,LEGPMonthly,1:12,I_monthly,@bar,@line);
-% xlabel('Month','FontSize',14)
-% set(get(Ax(1),'Ylabel'),'String','Monthly LEGP','FontSize',14)
-% set(get(Ax(2),'Ylabel'),'String','Monthly Insolation on Collector (Whr/m^2)','FontSize',14)%\
-% colormap hot
-% set(Ax(1),'FontSize',14)
-% set(Ax(2),'FontSize',14)
-% set(H2,'LineWidth',2,'LineStyle','--')
-% legend('Monthly LEGP for Yearly LEGP = 0.01','Monthly LEGP for Yearly LEGP = 0.05', 'Insolation on Collector (Whr/m^2)')%\
 
+%% Calculate Perccentage of Supply Going Directly to Demand
+enDirF = energyDir(I_C/1000*bestMultiLoc(ix,6),fridgeDemandYear);
+enDirPercF = sum(enDirF)./(sum(fridgeDemandYear))%-sum(LEG1));
 %% Light Demand 
 dates = MaliNTS(:,1:4);
 dates = [dates,ones(8760,2)];
 weather = MaliNTS(:,5);%,LuxorNTS(:,5),KisanganiNTS(:,5),NouakchottNTS(:,5)];LEGPMonthly
 [r,c] = size(weather);
 lats = 13.45;%25.68,0.51,18.08];
-demVec = lightDemandYear;
+demVec = lightDemandYear+5;
 % Specify the Desired LEGP to Test At
 LEGPVec = [0.01,0.05];
 bestMultiLoc = zeros(length(LEGPVec),6,c);
@@ -125,6 +105,7 @@ end
 disp('Best Without Refigerator Base Load')
 bestMultiLoc
 LEGP1
+
 %% Separate Out LEGP by Hour
 LEGPHourly = zeros(24,length(LEGPVec));
 LEGHourly = zeros(24,length(LEGPVec));
@@ -151,27 +132,6 @@ set(h2,'LineWidth',2,'LineStyle','--')
 legend('Hourly LEGP for Yearly LEGP = 0.01','Hourly LEGP for Yearly LEGP = 0.05', 'Average Hourly Energy Demand')
 h_legend=legend;
 set(h_legend,'FontSize',10);
-%% Separate Out LEGP by Month
-% LEGPMonthly = zeros(12,length(LEGPVec));
-% LEGMonthly = zeros(12,length(LEGPVec));
-% 
-% for ix = 1:length(LEGPVec)
-%     for jx = 1:12
-%         LEGMonthly(jx,ix) = sum(LEG1(:,ix).*(dates(:,3)==jx));
-%         LEGPMonthly(jx,ix) = LEGMonthly(jx,ix)./sum(demVec.*(dates(:,3)==jx));
-%     end
-% end
-% 
-% I_monthly = makeMonthlyRad(dates, I_C);
-% 
-% figure
-% [Ax, H1, H2] = plotyy(1:12,LEGPMonthly,1:12,I_monthly,@bar,@line);
-% xlabel('Month','FontSize',14)
-% set(get(Ax(1),'Ylabel'),'String','Monthly LEGP','FontSize',14)
-% set(get(Ax(2),'Ylabel'),'String','Monthly Insolation on Collector (Whr/m^2)','FontSize',14)%\
-% colormap hot
-% set(Ax(1),'FontSize',14)
-% set(Ax(2),'FontSize',14)
-% set(H2,'LineWidth',2,'LineStyle','--')
-% legend('Monthly LEGP for Yearly LEGP = 0.01','Monthly LEGP for Yearly LEGP = 0.05', 'Insolation on Collector (Whr/m^2)')%\
-
+%% Calculate Perccentage of Supply Going Directly to Demand
+enDirL = energyDir(I_C/1000*bestMultiLoc(ix,6),lightDemandYear);
+enDirPercL = sum(enDirL)./(sum(lightDemandYear))%-sum(LEG1));
