@@ -45,12 +45,22 @@ LEGP1
 LEGPHourly = zeros(24,length(LEGPVec));
 LEGHourly = zeros(24,length(LEGPVec));
 
+% Entire Year
+% for ix = 1:length(LEGPVec)
+%     for jx = 1:24
+%         LEGHourly(jx,ix) = sum(LEG1(:,ix).*(dates(:,4)==jx));
+%         LEGPHourly(jx,ix) = LEGHourly(jx,ix)./sum(demVec.*(dates(:,4)==jx));
+%     end
+% end
+
+% Month of August Only (hours 5089:5832)
 for ix = 1:length(LEGPVec)
     for jx = 1:24
-        LEGHourly(jx,ix) = sum(LEG1(:,ix).*(dates(:,4)==jx));
-        LEGPHourly(jx,ix) = LEGHourly(jx,ix)./sum(demVec.*(dates(:,4)==jx));
+        LEGHourly(jx,ix) = sum(LEG1(5089:5832,ix).*(dates(5089:5832,4)==jx));
+        LEGPHourly(jx,ix) = LEGHourly(jx,ix)./sum(demVec(5089:5832).*(dates(5089:5832,4)==jx));
     end
 end
+
 LEGPHourly1 = LEGPHourly;
 aveDay = makeAveDay(demVec(1:168));
 subplot(1,2,1)
@@ -110,12 +120,22 @@ LEGP1
 LEGPHourly = zeros(24,length(LEGPVec));
 LEGHourly = zeros(24,length(LEGPVec));
 
+% Entire Year
+% for ix = 1:length(LEGPVec)
+%     for jx = 1:24
+%         LEGHourly(jx,ix) = sum(LEG1(:,ix).*(dates(:,4)==jx));
+%         LEGPHourly(jx,ix) = LEGHourly(jx,ix)./sum(demVec.*(dates(:,4)==jx));
+%     end
+% end
+
+% Month of August Only (hours 5089:5832)
 for ix = 1:length(LEGPVec)
     for jx = 1:24
-        LEGHourly(jx,ix) = sum(LEG1(:,ix).*(dates(:,4)==jx));
-        LEGPHourly(jx,ix) = LEGHourly(jx,ix)./sum(demVec.*(dates(:,4)==jx));
+        LEGHourly(jx,ix) = sum(LEG1(5089:5832,ix).*(dates(5089:5832,4)==jx));
+        LEGPHourly(jx,ix) = LEGHourly(jx,ix)./sum(demVec(5089:5832).*(dates(5089:5832,4)==jx));
     end
 end
+
 LEGPHourly2 = LEGPHourly;
 aveDay = makeAveDay(demVec(1:168));
 subplot(1,2,2)
@@ -126,7 +146,7 @@ xlabel('Hour','FontSize',12)
 set(get(ax(1),'Ylabel'),'String','Hourly LEGP','FontSize',12)
 set(get(ax(2),'Ylabel'),'String','Average Hourly Energy Demand (Whr)','FontSize',12)
 colormap hot
-set(ax(1),'FontSize',12,'YLim',[0 max(max(LEGPHourly+.05))],'XLim', [0 25])
+set(ax(1),'FontSize',12,'YLim',[0 .50],'XLim', [0 25])
 set(ax(2),'FontSize',12,'XLim', [0 25])
 set(h2,'LineWidth',2,'LineStyle','--')
 legend('Hourly LEGP for Yearly LEGP = 0.01','Hourly LEGP for Yearly LEGP = 0.05', 'Average Hourly Energy Demand')
