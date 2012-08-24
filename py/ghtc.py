@@ -28,6 +28,9 @@ pbc_dict = {'type' : 'lead carbon',
 
 def table_2(plot=False, verbose=False):
     print '%table 2'
+    print '%', dt.datetime.now()
+    import os
+    os.system('git rev-parse HEAD')
     for load in ['day', 'night', 'continuous', 'lighting', 'freezer']:
         for battery in [lead_dict]:
             sim.run_simulation(battery, inverter_type='typical', load_type=load, plot=plot, verbose=verbose)
@@ -66,6 +69,6 @@ def table_5(plot=False, verbose=False):
     return df
 
 if __name__ == '__main__':
-    #table_2(plot=False, verbose=False)
-    table_inverter()
+    table_2(plot=False, verbose=False)
+    #table_inverter()
     #df = table_5()
