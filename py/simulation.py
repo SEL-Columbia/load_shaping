@@ -342,7 +342,10 @@ def run_simulation(battery_dict,
             'battery_size_kWh' : battery_size_kWh,
             'battery_npv' : battery_npv,
             'panel_cost' : panel_cost,
-            'battery_cost' : battery_cost}
+            'battery_cost' : battery_cost,
+            'inverter_type': inverter_type,
+            'battery_type': battery_dict['type'],
+            'load_type': load_type}
 
 def calc_battery_cost(battery_size, DOD, cost):
     return battery_size / DOD * cost
